@@ -20,10 +20,24 @@ mongoose.connect(process.env.MONGODB_URI, {
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Configure CORS explicitly
+const allowedOrigins = [
+  'http://localhost:3000',  // local development
+  process.env.FRONTEND_URL, // production frontend
+].filter(Boolean); // removes any undefined values
+
 app.use(cors({
-  origin: 'http://localhost:3000', // or your deployed frontend origin
-  methods: ['GET', 'POST', 'OPTIONS'],
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if(!origin) return callback(null, true);
+    
+    if(allowedOrigins.indexOf(origin) === -1){
+      return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // if you're using cookies or authentication
 }));
 
 // Explicitly handle OPTIONS for all routes

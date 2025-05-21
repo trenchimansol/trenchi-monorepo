@@ -33,7 +33,7 @@ function Pricing() {
   const plans = [
     {
       name: 'Basic Premium',
-      price: 0.2,
+      price: 0.3,
       duration: '1 week',
       popular: false,
       features: [

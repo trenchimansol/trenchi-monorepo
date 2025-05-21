@@ -26,7 +26,17 @@ export default function ProfileForm({ existingProfile, onSubmit }) {
     cryptoInterests: '',
     favoriteChains: '',
     profileImage: '',
+    referredBy: '',
   });
+
+  const [referralCode, setReferralCode] = useState(existingProfile?.referralCode || '');
+
+  // Update referral code when profile changes
+  React.useEffect(() => {
+    if (existingProfile?.referralCode) {
+      setReferralCode(existingProfile.referralCode);
+    }
+  }, [existingProfile]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,6 +85,57 @@ export default function ProfileForm({ existingProfile, onSubmit }) {
   return (
     <Box as="form" onSubmit={handleSubmit} width="100%" maxW="500px" p={4}>
       <VStack spacing={4}>
+        {/* Referral Code Display for Existing Users */}
+        {existingProfile && referralCode && (
+          <FormControl>
+            <FormLabel fontWeight="bold" color="purple.500">
+              Your Referral Code
+            </FormLabel>
+            <Input
+              value={referralCode}
+              isReadOnly
+              bg="purple.50"
+              _dark={{ 
+                bg: 'purple.900',
+                _hover: { bg: 'purple.800' }
+              }}
+              onClick={(e) => {
+                e.target.select();
+                navigator.clipboard.writeText(referralCode);
+                toast({
+                  title: 'Referral Code Copied! 🎉',
+                  description: 'Share this code with your friends!',
+                  status: 'success',
+                  duration: 2000,
+                });
+              }}
+              cursor="pointer"
+              _hover={{ bg: 'purple.100' }}
+              fontSize="lg"
+              textAlign="center"
+              fontWeight="bold"
+            />
+          </FormControl>
+        )}
+
+        {/* Referral Code Input for New Users */}
+        {!existingProfile && (
+          <FormControl>
+            <FormLabel fontWeight="bold" color="purple.500">
+              Have a Referral Code?
+            </FormLabel>
+            <Input
+              name="referredBy"
+              value={profile.referredBy}
+              onChange={handleChange}
+              placeholder="Enter your friend's referral code"
+              _placeholder={{ color: 'gray.400' }}
+              borderColor="purple.200"
+              _hover={{ borderColor: 'purple.300' }}
+              _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px purple.500' }}
+            />
+          </FormControl>
+        )}
         <FormControl isRequired>
           <FormLabel>Name</FormLabel>
           <Input
@@ -151,6 +212,44 @@ export default function ProfileForm({ existingProfile, onSubmit }) {
             placeholder="e.g., Ethereum, Solana, Polygon"
           />
         </FormControl>
+
+        {!existingProfile && (
+          <FormControl>
+            <FormLabel>Referral Code (Optional)</FormLabel>
+            <Input
+              name="referredBy"
+              value={profile.referredBy}
+              onChange={handleChange}
+              placeholder="Enter referral code if you have one"
+            />
+          </FormControl>
+        )}
+
+        {existingProfile && referralCode && (
+          <FormControl>
+            <FormLabel>Your Referral Code</FormLabel>
+            <Input
+              value={referralCode}
+              isReadOnly
+              bg="gray.50"
+              _dark={{ 
+                bg: 'gray.700',
+                _hover: { bg: 'gray.600' }
+              }}
+              onClick={(e) => {
+                e.target.select();
+                navigator.clipboard.writeText(referralCode);
+                toast({
+                  title: 'Copied to clipboard!',
+                  status: 'success',
+                  duration: 2000,
+                });
+              }}
+              cursor="pointer"
+              _hover={{ bg: 'gray.100' }}
+            />
+          </FormControl>
+        )}
 
         <Button
           type="submit"

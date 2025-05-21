@@ -487,17 +487,9 @@ export default function Matching() {
               textAlign="center"
               fontWeight="bold"
             >
-              Find Your Web3 Companion
+              Match. Chat. Trench. 
             </Heading>
-            <Text
-              fontSize="xl"
-              color="gray.600"
-              _dark={{ color: 'gray.400' }}
-              textAlign="center"
-              maxW="600px"
-            >
-              Match. Chat. Trench. Your journey to Web3 dating starts here.
-            </Text>
+
           </VStack>
 
           <Container maxW="440px" w="100%" display="flex" flexDirection="column" alignItems="center" flex={1}>

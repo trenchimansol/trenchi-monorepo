@@ -29,10 +29,13 @@ router.get('/potential-matches', async (req, res) => {
       ...currentUser.matchedUsers
     ];
 
-    // Example: filter logic could also check gender or "lookingFor" if desired
+    // Filter by gender preference
     const potential = await Profile.find({
       _id: { $nin: excludeIds },
-      // Additional filter logic here if you want, e.g. matching gender preferences
+      // Show only profiles that match the user's seeking preference
+      gender: currentUser.seeking,
+      // And where we match their seeking preference
+      seeking: currentUser.gender
     });
 
     res.status(200).json(potential);

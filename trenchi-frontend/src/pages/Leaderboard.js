@@ -91,8 +91,11 @@ export default function Leaderboard() {
                 <Tr>
                   <Th>Rank</Th>
                   <Th>Profile</Th>
-                  <Th isNumeric>Matches</Th>
-                  <Th isNumeric>Referrals</Th>
+                  <Th isNumeric>Matches (2pts)</Th>
+                  <Th isNumeric>Match Points</Th>
+                  <Th isNumeric>Referrals (0.25pts)</Th>
+                  <Th isNumeric>Referral Points</Th>
+                  <Th isNumeric>Total Points</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -117,8 +120,13 @@ export default function Leaderboard() {
                         <Text>{user.name}</Text>
                       </Link>
                     </Td>
-                    <Td isNumeric>{user.matchCount}</Td>
-                    <Td isNumeric>{user.referralCount}</Td>
+                    <Td isNumeric>{user.stats.matches.count}</Td>
+                    <Td isNumeric>{user.stats.matches.points}</Td>
+                    <Td isNumeric>{user.stats.referrals.count}</Td>
+                    <Td isNumeric>{user.stats.referrals.points.toFixed(2)}</Td>
+                    <Td isNumeric fontWeight="bold" color="purple.500">
+                      {user.stats.totalPoints.toFixed(2)}
+                    </Td>
                   </Tr>
                 ))}
               </Tbody>

@@ -17,7 +17,7 @@ function Navigation() {
   const bgColor = useColorModeValue('white', 'gray.800');
 
   const links = [
-    { name: 'Matches', href: '/' },
+    { name: 'Matches', href: '/matches' },
     { name: 'Messages', href: '/messages' },
     { name: 'Profile', href: '/profile' },
     { name: 'Leaderboard', href: '/leaderboard' },
@@ -36,24 +36,26 @@ function Navigation() {
       px={4}
       py={2}
     >
-      <Flex align="center" justify="space-between" maxW="1200px" mx="auto">
-        <RouterLink to="/">
-          <Button
-            variant="ghost"
-            fontWeight="bold"
-            fontSize="xl"
-            color="blue.400"
-            _hover={{
-              bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
-              transform: 'translateY(-2px)'
-            }}
-            transition="all 0.2s"
-          >
-            Trenchi
-          </Button>
-        </RouterLink>
+      <Flex align="center" justify="space-between" maxW="1200px" mx="auto" position="relative">
+        <Box position="absolute" left={4}>
+          <RouterLink to="/">
+            <Button
+              variant="ghost"
+              fontWeight="bold"
+              fontSize="xl"
+              color="blue.400"
+              _hover={{
+                bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
+                transform: 'translateY(-2px)'
+              }}
+              transition="all 0.2s"
+            >
+              Trenchi
+            </Button>
+          </RouterLink>
+        </Box>
 
-        <HStack spacing={4}>
+        <HStack spacing={4} mx="auto">
           {links.map((link) => (
             <RouterLink key={link.name} to={link.href}>
               <Button
@@ -69,7 +71,9 @@ function Navigation() {
               </Button>
             </RouterLink>
           ))}
+        </HStack>
 
+        <HStack spacing={4} position="absolute" right={4}>
           <IconButton
             icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
             onClick={toggleColorMode}

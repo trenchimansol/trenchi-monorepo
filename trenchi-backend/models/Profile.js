@@ -23,9 +23,20 @@ const profileSchema = new mongoose.Schema({
   likedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   matchedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+  // Points & Leaderboard System
+  matchCount: { type: Number, default: 0 },
+  matchPoints: { type: Number, default: 0 }, // 2 points per match
+  referralCount: { type: Number, default: 0 },
+  referralPoints: { type: Number, default: 0 }, // 0.25 points per referral
+  totalPoints: { type: Number, default: 0 }, // Combined points for leaderboard
+  
+  // Referral System
   referralCode: { type: String, unique: true },
   referredBy: { type: String },
-  referralCount: { type: Number, default: 0 }
+  referralHistory: [{
+    walletAddress: { type: String },
+    timestamp: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('Profile', profileSchema);

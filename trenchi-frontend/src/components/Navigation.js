@@ -20,6 +20,7 @@ function Navigation() {
     { name: 'Matches', href: '/' },
     { name: 'Messages', href: '/messages' },
     { name: 'Profile', href: '/profile' },
+    { name: 'Leaderboard', href: '/leaderboard' },
     { name: 'Pricing', href: '/pricing' },
   ];
 

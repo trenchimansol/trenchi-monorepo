@@ -27,29 +27,36 @@ export default function Leaderboard() {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        const response = await fetch(`${api.baseURL}/api/leaderboard`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
+  const fetchLeaderboard = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${api.baseURL}/api/leaderboard`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch leaderboard data');
-        }
-
-        const data = await response.json();
-        setLeaderboardData(data);
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error);
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch leaderboard data');
       }
-    };
 
+      const data = await response.json();
+      setLeaderboardData(data);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchLeaderboard();
+    
+    // Set up 15-minute refresh interval
+    const refreshInterval = setInterval(fetchLeaderboard, 15 * 60 * 1000);
+    
+    // Cleanup interval on component unmount
+    return () => clearInterval(refreshInterval);
   }, []);
 
   if (isLoading) {

@@ -73,7 +73,7 @@ export default function Leaderboard() {
   return (
     <Box minH="100vh" bg={bgColor}>
       <Navigation />
-      <Container maxW="container.xl" py={8}>
+      <Container maxW="container.xl" py={20}>
         <VStack spacing={8} align="stretch">
           <Heading
             textAlign="center"

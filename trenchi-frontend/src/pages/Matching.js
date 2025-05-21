@@ -59,7 +59,7 @@ export default function Matching() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/subscription/${publicKey.toString()}`,
+        `${process.env.REACT_APP_BACKEND_URL || 'https://trenchi-monorepo.onrender.com'}/api/subscription/${publicKey.toString()}`,
         {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,

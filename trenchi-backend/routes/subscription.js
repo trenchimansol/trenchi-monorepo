@@ -42,7 +42,13 @@ router.get('/:walletAddress', authenticateToken, async (req, res) => {
     const subscription = await Subscription.findOne({ walletAddress });
     
     if (!subscription) {
-      return res.status(404).json({ error: 'No subscription found' });
+      // Return a default response for non-subscribers
+      return res.status(200).json({
+        walletAddress,
+        isExpired: true,
+        plan: 'Free',
+        expirationDate: null
+      });
     }
 
     // Check if subscription is expired

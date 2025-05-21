@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 // Import your route files
 const messagesRouter = require('./routes/messages');
 const subscriptionRoutes = require('./routes/subscription');
+const leaderboardRoutes = require('./routes/leaderboard');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -50,6 +51,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Mount routes under /api
 app.use('/api/messages', messagesRouter);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
 
 // Test route
 app.get('/', (req, res) => {

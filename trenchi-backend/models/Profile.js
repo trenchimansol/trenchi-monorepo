@@ -22,7 +22,10 @@ const profileSchema = new mongoose.Schema({
   
   likedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
-  matchedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }]
+  matchedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+  referralCode: { type: String, unique: true },
+  referredBy: { type: String },
+  referralCount: { type: Number, default: 0 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Profile', profileSchema);

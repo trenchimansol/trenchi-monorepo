@@ -8,6 +8,7 @@ import Matching from './pages/Matching';
 import Profile from './pages/Profile';
 import Messages from './pages/Messages';
 import Pricing from './pages/Pricing';
+import Leaderboard from './pages/Leaderboard';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
               <Route path="/" element={<Matching />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />
             </Routes>
           </Box>
         </Router>

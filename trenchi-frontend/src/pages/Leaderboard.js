@@ -30,7 +30,7 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${api.baseURL}/api/leaderboard`, {
+      const response = await fetch(api.leaderboard, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },

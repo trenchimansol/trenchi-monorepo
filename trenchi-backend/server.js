@@ -5,9 +5,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Import your route files
-const authRoutes = require('./routes/auth');
-const matchRoutes = require('./routes/matchRoutes');
-const profileRoutes = require('./routes/profileRoutes');
+const messagesRouter = require('./routes/messages');
+const subscriptionRoutes = require('./routes/subscription');
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -22,6 +21,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Configure CORS explicitly
 const allowedOrigins = [
   'http://localhost:3000',  // local development
+  'https://transcendent-gaufre-9c484c.netlify.app', // Netlify domain
   process.env.FRONTEND_URL, // production frontend
 ].filter(Boolean); // removes any undefined values
 
@@ -47,14 +47,9 @@ app.options('*', cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// Mount the auth routes under /api
-app.use('/api', authRoutes);
-
-// Mount the match routes under /api
-app.use('/api', matchRoutes);
-
-// Mount the profile routes under /api
-app.use('/api', profileRoutes);
+// Mount routes under /api
+app.use('/api/messages', messagesRouter);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Test route
 app.get('/', (req, res) => {

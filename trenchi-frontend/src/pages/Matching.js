@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import WelcomeTutorial from '../components/WelcomeTutorial';
+import Navigation from '../components/Navigation';
 import {
   Box,
   Button,
@@ -23,6 +25,7 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -39,7 +42,8 @@ export default function Matching() {
   const toast = useToast();
   const [potentialMatches, setPotentialMatches] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [tipAmount, setTipAmount] = useState(0.25);
   const [balance, setBalance] = useState(0);
@@ -166,25 +170,36 @@ export default function Matching() {
 
   useEffect(() => {
     const fetchBalance = async () => {
-      if (publicKey) {
-        try {
-          const connection = new Connection('https://api.mainnet-beta.solana.com');
-          const balance = await connection.getBalance(publicKey);
-          setBalance(balance / LAMPORTS_PER_SOL);
-        } catch (error) {
-          console.error('Error fetching balance:', error);
-        }
+      if (!publicKey) return;
+      
+      try {
+        // Use a more reliable RPC endpoint
+        const connection = new Connection(
+          process.env.REACT_APP_SOLANA_RPC_URL || 'https://solana-mainnet.g.alchemy.com/v2/hTwg5eAf1qtUnvVmtcNgCziDg3cE3-1K',
+          'confirmed'
+        );
+        
+        const balance = await connection.getBalance(publicKey);
+        setBalance(balance / LAMPORTS_PER_SOL);
+      } catch (error) {
+        console.error('Error fetching balance:', error);
+        toast({
+          title: 'Error',
+          description: 'Could not fetch wallet balance',
+          status: 'error',
+          duration: 3000,
+        });
       }
     };
 
     fetchBalance();
-  }, [publicKey]);
+  }, [publicKey, toast]);
 
   const fetchPotentialMatches = async () => {
     if (!publicKey) return;
 
     try {
-      setLoading(true);
+      setIsLoading(true);
       // In production, these would be API calls:
       // 1. Get user's profile with preferences
       // const userProfileResponse = await fetch(api.getProfile(publicKey.toString()));
@@ -226,7 +241,7 @@ export default function Matching() {
         duration: 3000,
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -376,20 +391,24 @@ export default function Matching() {
   };
 
   const handleDislike = async () => {
-    if (!publicKey || !potentialMatches[currentIndex]) return;
+    if (!publicKey) {
+      onOpen();
+      return;
+    }
+
+    if (!potentialMatches[currentIndex]) return;
 
     try {
       setActionLoading(true);
-
       // In production, this would be an API call
-      // await fetch(api.rejectProfile({
+      // await fetch(api.dislikeProfile({
       //   walletAddress: publicKey.toString(),
-      //   rejectedId: potentialMatches[currentIndex]._id
+      //   dislikedId: potentialMatches[currentIndex]._id
       // }));
 
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
-
+      
       setCurrentIndex(prev => prev + 1);
     } catch (error) {
       toast({
@@ -403,110 +422,106 @@ export default function Matching() {
     }
   };
 
-  if (loading) {
-    return (
-      <Box 
-        minH="calc(100vh - 64px)" 
-        pt={20} 
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        bg="gray.50"
-        _dark={{ bg: 'gray.900' }}
-      >
-        <VStack spacing={6}>
-          <Spinner
-            size="xl"
-            thickness="4px"
-            speed="0.65s"
-            color="blue.500"
-            emptyColor="gray.200"
-          />
-          <Text 
-            color="gray.500" 
-            fontSize="lg"
-            textAlign="center"
-            maxW="250px"
-          >
-            Finding your perfect web3 match...
-          </Text>
-        </VStack>
-      </Box>
-    );
-  }
-
-  if (potentialMatches.length === 0 || currentIndex >= potentialMatches.length) {
-    return (
-      <Box 
-        minH="calc(100vh - 64px)" 
-        pt={20} 
-        pb={10} 
-        px={4}
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        bg="gray.50"
-        _dark={{ bg: 'gray.900' }}
-      >
-        <Container 
-          maxW="440px" 
-          w="100%"
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          flex={1}
-        >
-          <VStack spacing={6} textAlign="center">
-            <Heading
-              bgGradient="linear(to-r, blue.400, teal.400)"
-              bgClip="text"
-              fontSize="3xl"
-            >
-              No More Profiles
-            </Heading>
-            <Text 
-              fontSize="md" 
-              color="gray.600" 
-              _dark={{ color: 'gray.400' }}
-              maxW="300px"
-            >
-              You've viewed all potential matches! Check back later for new crypto enthusiasts.
-            </Text>
-            <Button
-              onClick={() => window.location.reload()}
-              colorScheme="blue"
-              size="lg"
-              mt={4}
-              w="200px"
-              _hover={{
-                transform: 'translateY(-2px)',
-                boxShadow: 'lg',
-              }}
-              transition="all 0.2s"
-            >
-              Refresh Matches
-            </Button>
-          </VStack>
-        </Container>
-      </Box>
-    );
-  }
-
   return (
-    <Box 
-      minH="calc(100vh - 64px)" 
-      pt={20} 
-      pb={10} 
-      px={4}
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      bg="gray.50"
-      _dark={{ bg: 'gray.900' }}
-    >
-      <Center>
-        <Modal isOpen={tipModal.isOpen} onClose={tipModal.onClose} isCentered size="sm">
+    <Box minH="100vh" bg={useColorModeValue('white', 'gray.900')}>
+      <Navigation />
+      
+      {/* Welcome Tutorial */}
+      {!publicKey && (
+        <WelcomeTutorial 
+          isOpen={showWelcome} 
+          onClose={() => setShowWelcome(false)} 
+        />
+      )}
+
+      {/* Loading State */}
+      {publicKey && isLoading ? (
+        <Center h="calc(100vh - 64px)">
+          <VStack spacing={4}>
+            <Spinner
+              thickness="4px"
+              speed="0.65s"
+              emptyColor="gray.200"
+              color="purple.500"
+              size="xl"
+            />
+            <Text color="gray.500">
+              Finding your perfect web3 match...
+            </Text>
+          </VStack>
+        </Center>
+      ) : !publicKey ? (
+        <Center h="calc(100vh - 64px)">
+          <VStack spacing={8} p={8} maxW="600px" textAlign="center">
+            <Heading 
+              bgGradient="linear(to-r, purple.400, pink.400)"
+              bgClip="text"
+              fontSize="4xl"
+            >
+              Welcome to Trenchi
+            </Heading>
+            <Text fontSize="xl" color="gray.500">
+              Find your perfect Web3 match and start your crypto journey together
+            </Text>
+            <HStack spacing={4}>
+              <WalletMultiButton />
+              {!showWelcome && (
+                <Button
+                  colorScheme="purple"
+                  size="lg"
+                  onClick={() => setShowWelcome(true)}
+                >
+                  View Tutorial
+                </Button>
+              )}
+            </HStack>
+          </VStack>
+        </Center>
+      ) : (
+        <Container maxW="container.xl" py={20}>
+          <VStack spacing={8} align="center" mb={12}>
+            <Heading
+              bgGradient="linear(to-r, purple.400, pink.400)"
+              bgClip="text"
+              fontSize="4xl"
+              textAlign="center"
+              fontWeight="bold"
+            >
+              Find Your Web3 Companion
+            </Heading>
+            <Text
+              fontSize="xl"
+              color="gray.600"
+              _dark={{ color: 'gray.400' }}
+              textAlign="center"
+              maxW="600px"
+            >
+              Match. Chat. Trench. Your journey to Web3 dating starts here.
+            </Text>
+          </VStack>
+
+          <Container maxW="440px" w="100%" display="flex" flexDirection="column" alignItems="center" flex={1}>
+            <Box
+              w="100%"
+              display="flex"
+              justifyContent="center"
+              transform="translateZ(0)"
+              transition="transform 0.3s ease-in-out"
+            >
+              <MatchCard
+                profile={potentialMatches[currentIndex]}
+                onLike={handleLike}
+                onDislike={handleDislike}
+                onTip={tipModal.onOpen}
+                loading={actionLoading}
+              />
+            </Box>
+          </Container>
+        </Container>
+      )}
+
+      {/* Tip Modal */}
+      <Modal isOpen={tipModal.isOpen} onClose={tipModal.onClose} isCentered size="sm">
         <ModalOverlay backdropFilter="blur(10px)" />
         <ModalContent bg="gray.900" color="white">
           <ModalBody p={6}>
@@ -592,93 +607,6 @@ export default function Matching() {
           </ModalBody>
         </ModalContent>
       </Modal>
-
-      <Modal isOpen={isOpen} onClose={onClose} isCentered size="md">
-          <ModalOverlay
-            bg="blackAlpha.300"
-            backdropFilter="blur(10px)"
-          />
-          <ModalContent
-            bg="white"
-            _dark={{ bg: 'gray.800' }}
-            borderRadius="xl"
-            mx={4}
-          >
-          <ModalBody p={8}>
-            <VStack spacing={6} align="stretch">
-              <Heading size="lg" textAlign="center">
-                Connect Your Wallet
-              </Heading>
-              <Text textAlign="center" fontSize="lg">
-                Please connect your wallet and create a profile to start matching with others!
-              </Text>
-              <VStack spacing={4}>
-                <WalletMultiButton />
-                <Button
-                  colorScheme="blue"
-                  size="lg"
-                  w="full"
-                  onClick={() => {
-                    navigate('/profile');
-                    onClose();
-                  }}
-                  _hover={{
-                    transform: 'translateY(-2px)',
-                    boxShadow: 'lg',
-                  }}
-                  transition="all 0.2s"
-                >
-                  Create Profile
-                </Button>
-              </VStack>
-            </VStack>
-          </ModalBody>
-          </ModalContent>
-        </Modal>
-      </Center>
-      <Container 
-        maxW="440px" 
-        w="100%"
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        flex={1}
-      >
-        <VStack spacing={6} w="100%" mb={8}>
-          <Heading
-            bgGradient="linear(to-r, blue.400, teal.400)"
-            bgClip="text"
-            fontSize="3xl"
-            textAlign="center"
-          >
-            Find Your Web3 Companion
-          </Heading>
-          <Text
-            fontSize="md"
-            color="gray.600"
-            _dark={{ color: 'gray.400' }}
-            textAlign="center"
-            px={4}
-          >
-            Match. Chat. Trench. 
-          </Text>
-        </VStack>
-        <Box
-          w="100%"
-          display="flex"
-          justifyContent="center"
-          transform="translateZ(0)"
-          transition="transform 0.3s ease-in-out"
-        >
-          <MatchCard
-            profile={potentialMatches[currentIndex]}
-            onLike={handleLike}
-            onDislike={handleDislike}
-            onTip={tipModal.onOpen}
-            loading={actionLoading}
-          />
-        </Box>
-      </Container>
     </Box>
   );
 }

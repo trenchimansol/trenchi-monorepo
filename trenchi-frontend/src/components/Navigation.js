@@ -15,20 +15,32 @@ import {
 import { SunIcon, MoonIcon, HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
 import { Link as RouterLink } from 'react-router-dom';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 function Navigation() {
   const { colorMode, toggleColorMode } = useColorMode();
   const bgColor = useColorModeValue('white', 'gray.800');
   const { isOpen, onToggle } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const { publicKey } = useWallet();
 
-  const links = [
-    { name: 'Matches', href: '/matches' },
-    { name: 'Messages', href: '/messages' },
-    { name: 'Profile', href: '/profile' },
-    { name: 'Leaderboard', href: '/leaderboard' },
-    { name: 'Pricing', href: '/pricing' },
-  ];
+  const getLinks = () => {
+    const baseLinks = [
+      { name: 'Matches', href: '/matches' },
+      { name: 'Profile', href: '/profile' },
+      { name: 'Leaderboard', href: '/leaderboard' },
+      { name: 'Pricing', href: '/pricing' },
+    ];
+
+    if (publicKey) {
+      // Insert Messages after Matches for logged-in users
+      baseLinks.splice(1, 0, { name: 'Messages', href: '/messages' });
+    }
+
+    return baseLinks;
+  };
+
+  const links = getLinks();
 
   return (
     <Box

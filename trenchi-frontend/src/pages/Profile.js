@@ -267,38 +267,46 @@ function Profile() {
       return;
     }
 
-    setLoading(true);
     try {
-      const method = profile.referralCode ? 'PUT' : 'POST';
-      const response = await fetch(api.updateProfile, {
+      setLoading(true);
+      const isNewProfile = !profile.isComplete;
+      const method = isNewProfile ? 'POST' : 'PUT';
+      const response = await fetch(api.updateProfile(publicKey.toString()), {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...profile,
-          walletAddress: publicKey.toString(),
+          points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update profile');
-      
-      // Fetch updated profile to get referral code
-      await fetchProfile();
-      
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const data = await response.json();
+      setProfile(prev => ({
+        ...prev,
+        ...data,
+        isComplete: true,
+      }));
+
       toast({
-        title: 'Success',
-        description: 'Profile updated successfully',
+        title: `Profile ${isNewProfile ? 'Created' : 'Updated'} Successfully`,
+        description: isNewProfile ? 'You earned 10 points for creating your profile!' : undefined,
         status: 'success',
-        duration: 3000,
+        duration: 5000,
       });
+
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error('Error updating profile:', error);
       toast({
         title: 'Error',
         description: error.message,
         status: 'error',
-        duration: 3000,
+        duration: 5000,
       });
     } finally {
       setLoading(false);
@@ -605,6 +613,19 @@ function Profile() {
           </FormControl>
 
           <VStack spacing={4} width="100%">
+            {!profile.isComplete && (
+              <Box
+                p={4}
+                bg="blue.50"
+                _dark={{ bg: 'blue.900' }}
+                borderRadius="md"
+                width="100%"
+              >
+                <Text fontSize="sm" color="blue.600" _dark={{ color: 'blue.200' }}>
+                  🎉 Create your profile and earn 10 points! Points can be used for additional features and rewards.
+                </Text>
+              </Box>
+            )}
             <Button
               type="submit"
               colorScheme="blue"

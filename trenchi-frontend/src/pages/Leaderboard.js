@@ -21,27 +21,53 @@ import { Link as RouterLink } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 import api from '../config/api';
 
+const rankChangeAnimation = keyframes`
+  0% { transform: translateY(0); opacity: 0; }
+  50% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+`;
+
 export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState([]);
+  const [previousRanks, setPreviousRanks] = useState({});
+  const [userRank, setUserRank] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const rankChangeStyle = {
+    animation: `${rankChangeAnimation} 0.5s ease-out`,
+    display: 'inline-block'
+  };
+  const { publicKey } = useWallet();
 
   const fetchLeaderboard = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(api.leaderboard, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      // Store previous ranks before updating
+      const prevRanks = leaderboardData.reduce((acc, user, index) => {
+        acc[user.walletAddress] = index + 1;
+        return acc;
+      }, {});
+      setPreviousRanks(prevRanks);
+
+      const response = await fetch(
+        `${api.leaderboard}${publicKey ? `?userWallet=${publicKey.toString()}` : ''}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard data');
       }
 
       const data = await response.json();
-      setLeaderboardData(data);
+      setLeaderboardData(data.leaderboard);
+      setUserRank(data.userRank);
+      setUserData(data.userData);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     } finally {
@@ -82,8 +108,11 @@ export default function Leaderboard() {
             fontSize="4xl"
             fontWeight="bold"
           >
-            Trenchi Leaderboard
+            Top 20 Trenchers
           </Heading>
+          <Text color="gray.600" _dark={{ color: 'gray.400' }} textAlign="center">
+            Our most active users ranked by matches and referrals
+          </Text>
 
           <Box overflowX="auto" borderWidth="1px" borderColor={borderColor} borderRadius="lg">
             <Table variant="simple">
@@ -99,36 +128,100 @@ export default function Leaderboard() {
                 </Tr>
               </Thead>
               <Tbody>
-                {leaderboardData.map((user, index) => (
-                  <Tr key={user.walletAddress}>
-                    <Td fontWeight="bold">{index + 1}</Td>
-                    <Td>
-                      <Link
-                        as={RouterLink}
-                        to={`/profile/${user.walletAddress}`}
-                        display="flex"
-                        alignItems="center"
-                        gap={3}
-                      >
-                        <Image
-                          src={user.profileImage || 'https://via.placeholder.com/40'}
-                          alt={user.name}
-                          boxSize="40px"
-                          borderRadius="full"
-                          objectFit="cover"
-                        />
-                        <Text>{user.name}</Text>
-                      </Link>
-                    </Td>
-                    <Td isNumeric>{user.stats.matches.count}</Td>
-                    <Td isNumeric>{user.stats.matches.points}</Td>
-                    <Td isNumeric>{user.stats.referrals.count}</Td>
-                    <Td isNumeric>{user.stats.referrals.points.toFixed(2)}</Td>
-                    <Td isNumeric fontWeight="bold" color="purple.500">
-                      {user.stats.totalPoints.toFixed(2)}
-                    </Td>
-                  </Tr>
-                ))}
+                {leaderboardData.map((user, index) => {
+                  const prevRank = previousRanks[user.walletAddress] || index + 1;
+                  const rankChange = prevRank - (index + 1);
+                  const isCurrentUser = user.walletAddress === publicKey?.toString();
+
+                  return (
+                    <Tr 
+                      key={user.walletAddress}
+                      bg={isCurrentUser ? 'purple.50' : undefined}
+                      _dark={{ bg: isCurrentUser ? 'purple.900' : undefined }}
+                      transition="all 0.2s"
+                    >
+                      <Td fontWeight="bold">
+                        <HStack spacing={2}>
+                          <Text>{index + 1}</Text>
+                          {rankChange !== 0 && (
+                            <Text
+                              color={rankChange > 0 ? 'green.500' : 'red.500'}
+                              fontSize="sm"
+                              sx={rankChangeStyle}
+                            >
+                              {rankChange > 0 ? '↑' : '↓'}
+                              {Math.abs(rankChange)}
+                            </Text>
+                          )}
+                        </HStack>
+                      </Td>
+                      <Td>
+                        <Link
+                          as={RouterLink}
+                          to={`/profile/${user.walletAddress}`}
+                          display="flex"
+                          alignItems="center"
+                          gap={3}
+                        >
+                          <Image
+                            src={user.profileImage || 'https://via.placeholder.com/40'}
+                            alt={user.name}
+                            boxSize="40px"
+                            borderRadius="full"
+                            objectFit="cover"
+                          />
+                          <Text>{user.name}</Text>
+                        </Link>
+                      </Td>
+                      <Td isNumeric>{user.matchCount || 0}</Td>
+                      <Td isNumeric>{user.matchPoints || 0}</Td>
+                      <Td isNumeric>{user.referralCount || 0}</Td>
+                      <Td isNumeric>{(user.referralPoints || 0).toFixed(2)}</Td>
+                      <Td isNumeric fontWeight="bold" color="purple.500">
+                        {(user.totalPoints || 0).toFixed(2)}
+                      </Td>
+                    </Tr>
+                  );
+                })}
+                {userData && (
+                  <>
+                    <Tr>
+                      <Td colSpan={7} py={2} bg="gray.50" _dark={{ bg: 'gray.700' }}>
+                        <Center>
+                          <Text color="gray.500">...</Text>
+                        </Center>
+                      </Td>
+                    </Tr>
+                    <Tr bg="purple.50" _dark={{ bg: 'purple.900' }}>
+                      <Td fontWeight="bold">{userRank}</Td>
+                      <Td>
+                        <Link
+                          as={RouterLink}
+                          to={`/profile/${userData.walletAddress}`}
+                          display="flex"
+                          alignItems="center"
+                          gap={3}
+                        >
+                          <Image
+                            src={userData.profileImage || 'https://via.placeholder.com/40'}
+                            alt={userData.name}
+                            boxSize="40px"
+                            borderRadius="full"
+                            objectFit="cover"
+                          />
+                          <Text>{userData.name}</Text>
+                        </Link>
+                      </Td>
+                      <Td isNumeric>{userData.matchCount || 0}</Td>
+                      <Td isNumeric>{userData.matchPoints || 0}</Td>
+                      <Td isNumeric>{userData.referralCount || 0}</Td>
+                      <Td isNumeric>{(userData.referralPoints || 0).toFixed(2)}</Td>
+                      <Td isNumeric fontWeight="bold" color="purple.500">
+                        {(userData.totalPoints || 0).toFixed(2)}
+                      </Td>
+                    </Tr>
+                  </>
+                )}
               </Tbody>
             </Table>
           </Box>

@@ -81,9 +81,13 @@ function Profile() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Prevent changes to referredBy if it's already set
+    if (name === 'referredBy' && profile.referredBy) {
+      return;
+    }
     setProfile(prev => ({
       ...prev,
-      [name]: value,
+      [name]: value
     }));
   };
 
@@ -120,28 +124,44 @@ function Profile() {
       if (response.ok) {
         const data = await response.json();
         // Update profile state with fetched data including referral code
-        setProfile(prev => ({
-          ...prev,
-          ...data,
+        setProfile({
+          name: data.name || '',
+          age: data.age || '',
+          gender: data.gender || '',
+          seeking: data.seeking || '',
+          bio: data.bio || '',
+          cryptoInterests: data.cryptoInterests || '',
+          favoriteChains: data.favoriteChains || '',
+          walletAddress: data.walletAddress || publicKey.toString(),
+          photos: data.photos || ['', '', ''],
           referralCode: data.referralCode || '',
           referredBy: data.referredBy || '',
+          matchCount: data.matchCount || 0,
+          matchPoints: data.matchPoints || 0,
+          referralCount: data.referralCount || 0,
+          referralPoints: data.referralPoints || 0,
+          totalPoints: data.totalPoints || 0,
           isComplete: true
-        }));
-
-        // Show success message if referral code exists
-        if (data.referralCode) {
-          toast({
-            title: 'Your Referral Code',
-            description: `Your unique referral code is ${data.referralCode}. Share it with friends!`,
-            status: 'success',
-            duration: 5000,
-            isClosable: true,
-            position: 'top'
-          });
-        }
+        });
       } else if (response.status === 404) {
-        // Profile doesn't exist yet - that's okay for new users
-        console.log('No profile found - new user');
+        // Profile doesn't exist yet - initialize empty profile
+        setProfile({
+          name: '',
+          age: '',
+          gender: '',
+          seeking: '',
+          bio: '',
+          cryptoInterests: '',
+          favoriteChains: '',
+          walletAddress: publicKey.toString(),
+          photos: ['', '', ''],
+          isComplete: false,
+          matchCount: 0,
+          matchPoints: 0,
+          referralCount: 0,
+          referralPoints: 0,
+          totalPoints: 0
+        });
       } else {
         throw new Error('Failed to fetch profile');
       }
@@ -466,25 +486,33 @@ function Profile() {
             </FormControl>
           )}
 
-          {/* Referral Code Input for New Users */}
-          {!profile.referralCode && (
-            <FormControl>
-              <FormLabel fontWeight="bold" color="purple.500">
-                Have a Referral Code?
-              </FormLabel>
-              <Input
-                name="referredBy"
-                value={profile.referredBy}
-                onChange={handleChange}
-                placeholder="Enter your friend's referral code"
-                _placeholder={{ color: 'gray.400' }}
-                borderColor="purple.200"
-                _hover={{ borderColor: 'purple.300' }}
-                _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px purple.500' }}
-              />
-              <FormHelperText>Enter a friend's referral code to get started!</FormHelperText>
-            </FormControl>
-          )}
+          {/* Referral Code Input */}
+          <FormControl>
+            <FormLabel fontWeight="bold" color="purple.500">
+              {profile.referredBy ? 'Your Referral Code' : 'Have a Referral Code?'}
+            </FormLabel>
+            <Input
+              name="referredBy"
+              value={profile.referredBy}
+              onChange={handleChange}
+              placeholder="Enter your friend's referral code"
+              _placeholder={{ color: 'gray.400' }}
+              borderColor="purple.200"
+              _hover={{ borderColor: profile.referredBy ? 'purple.200' : 'purple.300' }}
+              _focus={{ borderColor: 'purple.500', boxShadow: '0 0 0 1px purple.500' }}
+              isReadOnly={!!profile.referredBy}
+              bg={profile.referredBy ? 'purple.50' : 'white'}
+              _dark={{
+                bg: profile.referredBy ? 'purple.900' : 'gray.700',
+                _hover: { bg: profile.referredBy ? 'purple.900' : 'gray.600' }
+              }}
+            />
+            <FormHelperText>
+              {profile.referredBy 
+                ? 'Referral code has been applied and cannot be changed'
+                : 'Enter a friend\'s referral code to get started!'}
+            </FormHelperText>
+          </FormControl>
 
           <FormControl>
             <FormLabel fontWeight="medium">Photos</FormLabel>

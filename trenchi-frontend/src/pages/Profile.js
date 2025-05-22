@@ -1,23 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Box, 
-  Button, 
-  FormControl, 
-  FormLabel, 
-  FormHelperText, 
-  Heading, 
-  Input, 
-  Select, 
-  Text, 
-  Textarea, 
-  VStack, 
-  HStack, 
-  Image, 
-  IconButton, 
-  Center, 
+import {
+  Box,
+  Button,
+  Container,
+  FormControl,
+  FormLabel,
+  FormHelperText,
+  Input,
+  VStack,
+  Image,
+  Text,
+  Heading,
   useToast,
+  IconButton,
+  HStack,
+  Textarea,
+  Center,
+  Spinner,
+  Grid,
   AspectRatio,
-  Stack
+  Stack,
+  useColorModeValue,
+  Select,
 } from '@chakra-ui/react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { AddIcon, CloseIcon } from '@chakra-ui/icons';
@@ -48,6 +52,8 @@ function Profile() {
 
   const genderOptions = ['Male', 'Female'];
   const seekingOptions = ['Male', 'Female'];
+  const bgColor = useColorModeValue('white', 'gray.800');
+  const borderColor = useColorModeValue('gray.200', 'gray.700');
 
   // Validate profile completeness
   useEffect(() => {
@@ -114,7 +120,7 @@ function Profile() {
     }
   }, [publicKey, connection]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (retryCount = 0) => {
     if (!publicKey) return;
 
     try {
@@ -144,27 +150,40 @@ function Profile() {
           isComplete: true
         });
       } else if (response.status === 404) {
-        // Profile doesn't exist yet - initialize empty profile
-        console.log('Profile not found - initializing empty profile');
-        setProfile({
-          name: '',
-          age: '',
-          gender: '',
-          seeking: '',
-          bio: '',
-          cryptoInterests: '',
-          favoriteChains: '',
-          walletAddress: publicKey.toString(),
-          photos: ['', '', ''],
-          isComplete: false,
-          matchCount: 0,
-          matchPoints: 0,
-          referralCount: 0,
-          referralPoints: 0,
-          totalPoints: 0
-        });
-      } else {
-        throw new Error('Failed to fetch profile');
+        if (!response.ok) {
+          if (response.status === 404) {
+            // Only log in development
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Profile not found - initializing empty profile');
+            }
+            setProfile({
+              name: '',
+              age: '',
+              gender: '',
+              seeking: '',
+              bio: '',
+              cryptoInterests: '',
+              favoriteChains: '',
+              walletAddress: publicKey.toString(),
+              photos: ['', '', ''],
+              referralCode: '',
+              referredBy: '',
+              matchCount: 0,
+              matchPoints: 0,
+              referralCount: 0,
+              referralPoints: 0,
+              totalPoints: 0,
+              isComplete: false
+            });
+            return;
+          }
+          // Only retry on server errors or network issues
+          if ((response.status >= 500 || response.status === 0) && retryCount < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+            return fetchProfile(retryCount + 1);
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -288,26 +307,24 @@ function Profile() {
 
   if (!publicKey) {
     return (
-      <Center minH="100vh" p={4}>
-        <Box 
-          maxW="sm" 
-          w="100%" 
-          p={8} 
-          textAlign="center" 
-          bg="white" 
-          _dark={{ bg: 'gray.800' }}
-          shadow="xl"
-          borderRadius="xl"
+      <Center minH="100vh" bg="gray.50" _dark={{ bg: 'gray.900' }} pt={24} pb={16}>
+        <Box
+          maxW="container.md"
+          p={{ base: 4, md: 8 }}
+          bg={bgColor}
+          boxShadow={{ base: 'none', md: 'lg' }}
+          borderRadius={{ base: 'none', md: 'xl' }}
         >
-          <VStack spacing={4}>
+          <VStack spacing={4} align="center" w="full">
             <Heading
-              fontSize="2xl"
+              size={{ base: 'md', md: 'lg' }}
+              textAlign="center"
               bgGradient="linear(to-r, blue.400, teal.400)"
               bgClip="text"
             >
               Connect Your Wallet
             </Heading>
-            <Text color="gray.600" _dark={{ color: 'gray.400' }}>
+            <Text color="gray.600" _dark={{ color: 'gray.400' }} textAlign="center">
               Please connect your Solana wallet to create your profile
             </Text>
             <WalletMultiButton />
@@ -320,26 +337,24 @@ function Profile() {
   return (
     <Center minH="100vh" bg="gray.50" _dark={{ bg: 'gray.900' }} pt={24} pb={16}>
       <Box
-        bg="white"
-        _dark={{ bg: 'gray.800' }}
-        borderRadius="xl"
-        shadow="xl"
-        p={8}
-        w="90%"
-        maxW="500px"
+        maxW="container.md" 
+        p={{ base: 4, md: 8 }} 
+        bg={bgColor}
+        boxShadow={{ base: 'none', md: 'lg' }} 
+        borderRadius={{ base: 'none', md: 'xl' }}
+        w={{ base: 'full', md: 'auto' }}
       >
-        <form onSubmit={handleSubmit}>
-          <VStack spacing={6} align="stretch">
-            <Heading
-              fontSize="2xl"
-              textAlign="center"
-              mb={6}
-            >
-              {profile.isComplete ? 'Edit Profile' : 'Create Profile'}
-            </Heading>
+        <VStack spacing={{ base: 4, md: 6 }} as="form" onSubmit={handleSubmit} align="stretch" w="full">
+          <Heading
+            fontSize={{ base: 'xl', md: '2xl' }}
+            textAlign="center"
+            mb={{ base: 4, md: 6 }}
+          >
+            {profile.isComplete ? 'Edit Profile' : 'Create Profile'}
+          </Heading>
 
-          <FormControl isRequired>
-            <FormLabel fontWeight="medium">Name</FormLabel>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Name</FormLabel>
             <Input
               name="name"
               value={profile.name}
@@ -351,11 +366,10 @@ function Profile() {
             />
           </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel fontWeight="medium">Age</FormLabel>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Age</FormLabel>
             <Input
               name="age"
-              type="number"
               value={profile.age}
               onChange={handleChange}
               placeholder="Your age"
@@ -365,8 +379,8 @@ function Profile() {
             />
           </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel fontWeight="medium">Gender</FormLabel>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Gender</FormLabel>
             <Select
               name="gender"
               value={profile.gender}
@@ -381,8 +395,8 @@ function Profile() {
             </Select>
           </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel fontWeight="medium">Seeking</FormLabel>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Seeking</FormLabel>
             <Select
               name="seeking"
               value={profile.seeking}
@@ -397,8 +411,8 @@ function Profile() {
             </Select>
           </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel fontWeight="medium">Bio</FormLabel>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Bio</FormLabel>
             <Textarea
               name="bio"
               value={profile.bio}
@@ -412,13 +426,13 @@ function Profile() {
             <FormHelperText>Share your interests and what you're looking for</FormHelperText>
           </FormControl>
 
-          <FormControl isRequired>
-            <FormLabel fontWeight="medium">Crypto Interests</FormLabel>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Crypto Interests</FormLabel>
             <Textarea
               name="cryptoInterests"
               value={profile.cryptoInterests}
               onChange={handleChange}
-              placeholder="What aspects of crypto interest you?"
+              placeholder="What aspects of crypto interest you the most?"
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}
@@ -517,11 +531,17 @@ function Profile() {
 
           <FormControl>
             <FormLabel fontWeight="medium">Photos</FormLabel>
-            <HStack spacing={4} justify="center">
+            <HStack spacing={{ base: 2, md: 4 }} justify="center" flexWrap="wrap">
               {Array(3)
                 .fill(null)
                 .map((_, index) => (
-                  <Box key={index} position="relative" w="100px" h="100px">
+                  <Box 
+                    key={index} 
+                    position="relative" 
+                    w={{ base: '80px', md: '100px' }} 
+                    h={{ base: '80px', md: '100px' }}
+                    mb={{ base: 2, md: 0 }}
+                  >
                     <Box
                       w="full"
                       h="full"
@@ -575,22 +595,29 @@ function Profile() {
                   </Box>
                 ))}
             </HStack>
-            <FormHelperText textAlign="center">Upload up to 3 photos. First photo will be your main profile picture.</FormHelperText>
+            <FormHelperText 
+              textAlign="center" 
+              fontSize={{ base: 'xs', md: 'sm' }}
+              mt={{ base: 1, md: 2 }}
+            >
+              Upload up to 3 photos. First photo will be your main profile picture.
+            </FormHelperText>
           </FormControl>
 
           <VStack spacing={4} width="100%">
             <Button
               type="submit"
               colorScheme="blue"
-              size="lg"
+              size={{ base: 'md', md: 'lg' }}
               w="full"
-              h={14}
+              h={{ base: 12, md: 14 }}
               isLoading={loading}
               loadingText={profile.isComplete ? 'Updating...' : 'Creating...'}
               _hover={{
                 transform: 'translateY(-2px)',
                 boxShadow: 'lg',
               }}
+              fontSize={{ base: 'md', md: 'lg' }}
               transition="all 0.2s"
             >
               {profile.isComplete ? 'Update Profile' : 'Create Profile'}
@@ -619,12 +646,16 @@ function Profile() {
               </Button>
             )}
 
-            <Text fontSize="sm" color="gray.500" textAlign="center">
+            <Text 
+              fontSize={{ base: 'xs', md: 'sm' }} 
+              color="gray.500" 
+              textAlign="center"
+              mt={{ base: 2, md: 4 }}
+            >
               Connected wallet: {profile.walletAddress ? `${profile.walletAddress.slice(0, 4)}...${profile.walletAddress.slice(-4)}` : 'Not connected'}
             </Text>
           </VStack>
         </VStack>
-        </form>
       </Box>
     </Center>
   );

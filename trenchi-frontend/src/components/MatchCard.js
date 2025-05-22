@@ -49,15 +49,15 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
   return (
     <Box
       w="100%"
-      maxW="400px"
-      borderRadius="2xl"
+      maxW={{ base: '100%', sm: '400px' }}
+      borderRadius={{ base: 'xl', sm: '2xl' }}
       overflow="hidden"
       bg="white"
       _dark={{ bg: 'gray.800' }}
       shadow="2xl"
       transform="auto"
       transition="all 0.3s ease"
-      _hover={{ transform: 'scale(1.02)' }}
+      _hover={{ transform: { base: 'none', sm: 'scale(1.02)' } }}
       position="relative"
     >
       <Box
@@ -75,7 +75,7 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
             alt={`${profile.name} - Photo ${currentPhotoIndex + 1}`}
             objectFit="cover"
             w="100%"
-            h="440px"
+            h={{ base: '380px', sm: '440px' }}
           />
           {profile?.photos?.length > 1 && (
             <>
@@ -141,7 +141,7 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
           color="white"
         >
           <HStack justify="space-between" width="100%" mb={2}>
-            <Text fontSize="2xl" fontWeight="bold">
+            <Text fontSize={{ base: 'xl', sm: '2xl' }} fontWeight="bold">
               {profile?.name || 'Anonymous'}, {profile?.age || '?'}
             </Text>
             {profile.walletAddress && (
@@ -231,20 +231,20 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
             </Text>
           </Box>
 
-          <HStack spacing={8} mt={6} width="100%" justify="center" px={4}>
+          <HStack spacing={{ base: 4, sm: 8 }} mt={6} width="100%" justify="center" px={{ base: 2, sm: 4 }}>
             <IconButton
               icon={<CloseIcon />}
               onClick={onDislike}
               isLoading={loading}
               colorScheme="red"
               variant="solid"
-              size="lg"
-            width="64px"
-            height="64px"
+              size={{ base: 'md', sm: 'lg' }}
+              width={{ base: '56px', sm: '64px' }}
+              height={{ base: '56px', sm: '64px' }}
               isRound
               _hover={{
-                transform: 'scale(1.1)',
-              shadow: 'lg',
+                transform: { base: 'none', sm: 'scale(1.1)' },
+                shadow: 'lg',
               }}
               transition="all 0.2s"
             />
@@ -254,13 +254,13 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
               isLoading={loading}
               colorScheme="yellow"
               variant="solid"
-              size="lg"
-            width="64px"
-            height="64px"
+              size={{ base: 'md', sm: 'lg' }}
+              width={{ base: '56px', sm: '64px' }}
+              height={{ base: '56px', sm: '64px' }}
               isRound
               _hover={{
-                transform: 'scale(1.1)',
-              shadow: 'lg',
+                transform: { base: 'none', sm: 'scale(1.1)' },
+                shadow: 'lg',
                 color: 'yellow.300',
               }}
               transition="all 0.2s"
@@ -271,13 +271,13 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
               isLoading={loading}
               colorScheme="green"
               variant="solid"
-              size="lg"
-            width="64px"
-            height="64px"
+              size={{ base: 'md', sm: 'lg' }}
+              width={{ base: '56px', sm: '64px' }}
+              height={{ base: '56px', sm: '64px' }}
               isRound
               _hover={{
-                transform: 'scale(1.1)',
-              shadow: 'lg',
+                transform: { base: 'none', sm: 'scale(1.1)' },
+                shadow: 'lg',
               }}
               transition="all 0.2s"
             />

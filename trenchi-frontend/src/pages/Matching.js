@@ -422,19 +422,19 @@ export default function Matching() {
     }
   };
 
-  return (
-    <Box minH="100vh" bg={useColorModeValue('white', 'gray.900')}>
-      <Navigation />
-      
-      {/* Welcome Tutorial */}
-      {!publicKey && (
-        <WelcomeTutorial 
-          isOpen={showWelcome} 
-          onClose={() => setShowWelcome(false)} 
-        />
-      )}
+return (
+  <Box minH="100vh" bg={useColorModeValue('white', 'gray.900')}>
+    <Navigation />
+    
+    {/* Welcome Tutorial */}
+    {!publicKey && (
+      <WelcomeTutorial 
+        isOpen={showWelcome} 
+        onClose={() => setShowWelcome(false)} 
+      />
+    )}
 
-      {/* Loading State */}
+      {/* Main Content */}
       {publicKey && isLoading ? (
         <Center h="calc(100vh - 64px)">
           <VStack spacing={4}>
@@ -456,11 +456,11 @@ export default function Matching() {
             <Heading 
               bgGradient="linear(to-r, purple.400, pink.400)"
               bgClip="text"
-              fontSize="4xl"
+              fontSize={{ base: '3xl', sm: '4xl' }}
             >
               Welcome to Trenchi
             </Heading>
-            <Text fontSize="xl" color="gray.500">
+            <Text fontSize={{ base: 'lg', sm: 'xl' }} color="gray.500">
               Find your perfect Web3 match and start your crypto journey together
             </Text>
             <HStack spacing={4}>
@@ -468,7 +468,7 @@ export default function Matching() {
               {!showWelcome && (
                 <Button
                   colorScheme="purple"
-                  size="lg"
+                  size={{ base: 'md', sm: 'lg' }}
                   onClick={() => setShowWelcome(true)}
                 >
                   View Tutorial
@@ -478,21 +478,20 @@ export default function Matching() {
           </VStack>
         </Center>
       ) : (
-        <Container maxW="container.xl" py={20}>
-          <VStack spacing={8} align="center" mb={12}>
+        <Container maxW="container.xl" py={{ base: 12, sm: 20 }}>
+          <VStack spacing={{ base: 4, sm: 8 }} align="center" mb={{ base: 8, sm: 12 }}>
             <Heading
               bgGradient="linear(to-r, purple.400, pink.400)"
               bgClip="text"
-              fontSize="4xl"
+              fontSize={{ base: '3xl', sm: '4xl' }}
               textAlign="center"
               fontWeight="bold"
             >
               Match. Chat. Trench. 
             </Heading>
-
           </VStack>
 
-          <Container maxW="440px" w="100%" display="flex" flexDirection="column" alignItems="center" flex={1}>
+          <Container maxW={{ base: '100%', sm: '440px' }} w="100%" display="flex" flexDirection="column" alignItems="center" flex={1} px={{ base: 2, sm: 4 }}>
             <Box
               w="100%"
               display="flex"
@@ -515,12 +514,12 @@ export default function Matching() {
       {/* Tip Modal */}
       <Modal isOpen={tipModal.isOpen} onClose={tipModal.onClose} isCentered size="sm">
         <ModalOverlay backdropFilter="blur(10px)" />
-        <ModalContent bg="gray.900" color="white">
-          <ModalBody p={6}>
-            <VStack spacing={5} align="stretch">
-              <VStack spacing={2} align="center">
-                <Heading size="md">Send Tip</Heading>
-                <Text fontSize="sm" color="gray.400">
+        <ModalContent bg="gray.900" color="white" mx={{ base: 4, sm: 0 }}>
+          <ModalBody p={{ base: 4, sm: 6 }}>
+            <VStack spacing={{ base: 4, sm: 5 }} align="stretch">
+              <VStack spacing={{ base: 1, sm: 2 }} align="center">
+                <Heading size={{ base: 'sm', sm: 'md' }}>Send Tip</Heading>
+                <Text fontSize="sm" color="gray.400" textAlign="center">
                   Send SOL to instantly match with {potentialMatches[currentIndex]?.name}
                 </Text>
                 <Text fontSize="sm" color="gray.400">
@@ -529,12 +528,13 @@ export default function Matching() {
               </VStack>
 
               {!customAmount ? (
-                <VStack spacing={3}>
-                  <HStack spacing={4} width="100%" justify="center">
+                <VStack spacing={{ base: 2, sm: 3 }}>
+                  <HStack spacing={{ base: 2, sm: 4 }} width="100%" justify="center">
                     <Button
                       colorScheme={tipAmount === 0.25 ? "yellow" : "whiteAlpha"}
                       onClick={() => setTipAmount(0.25)}
                       width="100%"
+                      size={{ base: 'sm', sm: 'md' }}
                     >
                       0.25 SOL
                     </Button>
@@ -542,6 +542,7 @@ export default function Matching() {
                       colorScheme={tipAmount === 0.5 ? "yellow" : "whiteAlpha"}
                       onClick={() => setTipAmount(0.5)}
                       width="100%"
+                      size={{ base: 'sm', sm: 'md' }}
                     >
                       0.5 SOL
                     </Button>
@@ -586,6 +587,7 @@ export default function Matching() {
                 onClick={handleTip}
                 isLoading={actionLoading}
                 isDisabled={tipAmount > balance || tipAmount <= 0}
+                size={{ base: 'sm', sm: 'md' }}
               >
                 Send {tipAmount} SOL
               </Button>

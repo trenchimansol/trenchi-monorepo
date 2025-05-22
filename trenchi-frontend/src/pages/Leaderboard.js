@@ -18,6 +18,7 @@ import {
   Center,
   HStack,
   keyframes,
+  Button,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import Navigation from '../components/Navigation';
@@ -36,6 +37,7 @@ export default function Leaderboard() {
   const [userRank, setUserRank] = useState(null);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const rankChangeStyle = {
@@ -47,6 +49,8 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       setIsLoading(true);
+      setError(null);
+      
       // Store previous ranks before updating
       const prevRanks = leaderboardData.reduce((acc, user, index) => {
         acc[user.walletAddress] = index + 1;
@@ -68,11 +72,19 @@ export default function Leaderboard() {
       }
 
       const data = await response.json();
-      setLeaderboardData(data.leaderboard);
-      setUserRank(data.userRank);
-      setUserData(data.userData);
+      if (data && Array.isArray(data.leaderboard)) {
+        setLeaderboardData(data.leaderboard);
+        setUserRank(data.userRank);
+        setUserData(data.userData);
+      } else {
+        throw new Error('Invalid leaderboard data format');
+      }
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      setError(error.message);
+      setLeaderboardData([]);
+      setUserRank(null);
+      setUserData(null);
     } finally {
       setIsLoading(false);
     }
@@ -91,10 +103,22 @@ export default function Leaderboard() {
   if (isLoading) {
     return (
       <Box minH="100vh" bg={bgColor}>
-        <Navigation />
-        <Center h="50vh">
-          <Spinner size="xl" color="purple.500" />
-        </Center>
+        {isLoading ? (
+          <Center py={10}>
+            <Spinner size="xl" color="purple.500" />
+          </Center>
+        ) : error ? (
+          <Center py={10}>
+            <VStack spacing={4}>
+              <Text color="red.500">{error}</Text>
+              <Button colorScheme="purple" onClick={fetchLeaderboard}>
+                Try Again
+              </Button>
+            </VStack>
+          </Center>
+        ) : (
+          <Navigation />
+        )}
       </Box>
     );
   }
@@ -131,7 +155,7 @@ export default function Leaderboard() {
                 </Tr>
               </Thead>
               <Tbody>
-                {leaderboardData.map((user, index) => {
+                {Array.isArray(leaderboardData) && leaderboardData.map((user, index) => {
                   const prevRank = previousRanks[user.walletAddress] || index + 1;
                   const rankChange = prevRank - (index + 1);
                   const isCurrentUser = user.walletAddress === publicKey?.toString();

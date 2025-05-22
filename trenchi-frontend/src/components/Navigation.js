@@ -42,41 +42,59 @@ function Navigation() {
       px={4}
       py={2}
     >
-      <Flex align="center" justify="space-between" maxW="1200px" mx="auto">
-        <RouterLink to="/">
-          <Button
-            variant="ghost"
-            fontWeight="bold"
-            fontSize="xl"
-            color="blue.400"
-            _hover={{
-              bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
-              transform: 'translateY(-2px)'
-            }}
-            transition="all 0.2s"
-          >
-            Trenchi
-          </Button>
-        </RouterLink>
+      <Flex align="center" justify="space-between" maxW="1200px" mx="auto" position="relative">
+        <Box>
+          <RouterLink to="/">
+            <Button
+              variant="ghost"
+              fontWeight="bold"
+              fontSize="xl"
+              color="blue.400"
+              _hover={{
+                bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
+                transform: 'translateY(-2px)'
+              }}
+              transition="all 0.2s"
+            >
+              Trenchi
+            </Button>
+          </RouterLink>
+        </Box>
 
         {!isMobile ? (
-          <HStack spacing={4}>
-            {links.map((link) => (
-              <RouterLink key={link.name} to={link.href}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  _hover={{
-                    bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
-                    transform: 'translateY(-2px)'
-                  }}
-                  transition="all 0.2s"
-                >
-                  {link.name}
-                </Button>
-              </RouterLink>
-            ))}
-          </HStack>
+          <>
+            <HStack spacing={4} position="absolute" left="50%" transform="translateX(-50%)">
+              {links.map((link) => (
+                <RouterLink key={link.name} to={link.href}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    _hover={{
+                      bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
+                      transform: 'translateY(-2px)'
+                    }}
+                    transition="all 0.2s"
+                  >
+                    {link.name}
+                  </Button>
+                </RouterLink>
+              ))}
+            </HStack>
+            <HStack spacing={4} position="absolute" right={4}>
+              <IconButton
+                icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
+                onClick={toggleColorMode}
+                variant="ghost"
+                aria-label="Toggle color mode"
+                _hover={{
+                  bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
+                  transform: 'translateY(-2px)'
+                }}
+                transition="all 0.2s"
+              />
+              <WalletMultiButton />
+            </HStack>
+          </>
         ) : (
           <IconButton
             display={{ base: 'flex', md: 'none' }}
@@ -85,23 +103,6 @@ function Navigation() {
             variant="ghost"
             aria-label="Toggle Navigation"
           />
-        )}
-
-        {!isMobile && (
-          <HStack spacing={4} position="absolute" right={4}>
-            <IconButton
-              icon={colorMode === 'light' ? <MoonIcon /> : <SunIcon />}
-              onClick={toggleColorMode}
-              variant="ghost"
-              aria-label="Toggle color mode"
-              _hover={{
-                bg: colorMode === 'light' ? 'gray.100' : 'gray.700',
-                transform: 'translateY(-2px)'
-              }}
-              transition="all 0.2s"
-            />
-            <WalletMultiButton />
-          </HStack>
         )}
       </Flex>
 

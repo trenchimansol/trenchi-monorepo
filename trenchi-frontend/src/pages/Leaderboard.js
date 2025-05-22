@@ -34,8 +34,7 @@ const rankChangeAnimation = keyframes`
 export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [previousRanks, setPreviousRanks] = useState({});
-  const [userRank, setUserRank] = useState(null);
-  const [userData, setUserData] = useState(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const bgColor = useColorModeValue('white', 'gray.800');
@@ -47,15 +46,16 @@ export default function Leaderboard() {
   const { publicKey } = useWallet();
 
   const fetchLeaderboard = useCallback(async () => {
+    if (isLoading) return;
     try {
       setIsLoading(true);
       setError(null);
       
-      // Store previous ranks before updating
-      const prevRanks = leaderboardData.reduce((acc, user, index) => {
-        acc[user.walletAddress] = index + 1;
-        return acc;
-      }, {});
+      // Store previous ranks
+      const prevRanks = {};
+      leaderboardData.forEach((user, index) => {
+        prevRanks[user.walletAddress] = index + 1;
+      });
       setPreviousRanks(prevRanks);
 
       const response = await fetch(
@@ -67,34 +67,36 @@ export default function Leaderboard() {
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch leaderboard data');
+        const errorText = await response.text();
+        console.error('Server response:', errorText);
+        throw new Error('Failed to fetch leaderboard data');
       }
 
+      const data = await response.json();
+
       // Validate data structure
-      if (!data || !Array.isArray(data.leaderboard)) {
+      if (!Array.isArray(data)) {
         console.error('Invalid data format:', data);
         throw new Error('Invalid leaderboard data format');
       }
 
       // Filter out any invalid entries
-      const validLeaderboard = data.leaderboard.filter(user => 
+      const validLeaderboard = data.filter(user => 
         user && typeof user === 'object' && 
-        user.walletAddress && 
-        (user.name || user.walletAddress)
-      );
+        user.walletAddress
+      ).map(user => ({
+        ...user,
+        name: user.name || user.walletAddress.slice(0, 6)
+      }));
 
       setLeaderboardData(validLeaderboard);
-      setUserRank(data.userRank);
-      setUserData(data.userData);
+      // User rank and data will come from the profile component
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       setError(error.message);
       setLeaderboardData([]);
-      setUserRank(null);
-      setUserData(null);
+
       
       // If it's a 404 for the user's profile, create an empty one
       if (error.message.includes('profile not found') && publicKey) {
@@ -127,7 +129,7 @@ export default function Leaderboard() {
     } finally {
       setIsLoading(false);
     }
-  }, [publicKey, leaderboardData]);
+  }, [publicKey, isLoading]);
 
   useEffect(() => {
     fetchLeaderboard();
@@ -242,43 +244,7 @@ export default function Leaderboard() {
                     </Tr>
                   );
                 })}
-                {userData && (
-                  <>
-                    <Tr>
-                      <Td colSpan={7} py={2} bg="gray.50" _dark={{ bg: 'gray.700' }}>
-                        <Center>
-                          <Text color="gray.500">...</Text>
-                        </Center>
-                      </Td>
-                    </Tr>
-                    <Tr bg="purple.50" _dark={{ bg: 'purple.900' }}>
-                      <Td fontWeight="bold">{userRank}</Td>
-                      <Td>
-                        <Link
-                          as={RouterLink}
-                          to={`/profile/${userData.walletAddress}`}
-                          display="flex"
-                          alignItems="center"
-                          gap={3}
-                        >
-                          <Image
-                            src={userData.profileImage || 'https://via.placeholder.com/40'}
-                            alt={userData.name}
-                            boxSize="40px"
-                            borderRadius="full"
-                            objectFit="cover"
-                          />
-                          <Text>{userData.name}</Text>
-                        </Link>
-                      </Td>
-                      <Td isNumeric>{userData.matchCount || 0}</Td>
-                      <Td isNumeric>{userData.referralCount || 0}</Td>
-                      <Td isNumeric fontWeight="bold" color="purple.500">
-                        {(userData.totalPoints || 0).toFixed(2)}
-                      </Td>
-                    </Tr>
-                  </>
-                )}
+
               </Tbody>
             </Table>
           </Box>

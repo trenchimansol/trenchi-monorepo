@@ -120,9 +120,9 @@ function Profile() {
     try {
       setLoading(true);
       const response = await fetch(api.getProfile(publicKey.toString()));
-      const data = await response.json();
       
       if (response.ok) {
+        const data = await response.json();
         // Update profile state with fetched data including referral code
         setProfile({
           name: data.name || '',
@@ -145,7 +145,7 @@ function Profile() {
         });
       } else if (response.status === 404) {
         // Profile doesn't exist yet - initialize empty profile
-        console.log('Profile not found:', data.error || 'Not found');
+        console.log('Profile not found - initializing empty profile');
         setProfile({
           name: '',
           age: '',

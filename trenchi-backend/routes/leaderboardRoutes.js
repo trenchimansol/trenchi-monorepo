@@ -26,7 +26,7 @@ router.get('/leaderboard', async (req, res) => {
 
     // Get top 20 users
     const leaderboard = await Profile.find({})
-      .select('name walletAddress matchCount matchPoints referralCount referralPoints totalPoints')
+      .select('name walletAddress matchCount referralCount totalPoints')
       .sort({ totalPoints: -1 })
       .limit(20);
 
@@ -34,51 +34,18 @@ router.get('/leaderboard', async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch leaderboard data' });
     }
 
-    // Get user's data if not in top 20
-    let userData = null;
-    if (userWallet && userRank > 20) {
-      userData = await Profile.findOne({ walletAddress: userWallet })
-        .select('name walletAddress matchCount matchPoints referralCount referralPoints totalPoints');
-      
-      if (!userData) {
-        return res.status(404).json({ error: 'User profile not found' });
-      }
-    }
-
-    // Ensure all required fields are present
-    const formattedLeaderboard = leaderboard.map(user => {
-      if (!user.name || !user.walletAddress) {
-        console.error('Invalid user data:', user);
-        return null;
-      }
-      return {
-      name: user.name,
+    // Format the leaderboard data
+    const formattedLeaderboard = leaderboard.map(user => ({
+      name: user.name || user.walletAddress.slice(0, 6),
       walletAddress: user.walletAddress,
-      matchCount: user.matchCount,
-      matchPoints: user.matchPoints,
-      referralCount: user.referralCount,
-      referralPoints: user.referralPoints,
+      matchCount: user.matchCount || 0,
+      referralCount: user.referralCount || 0,
       totalPoints: user.totalPoints || 0
-    };
-    }).filter(Boolean); // Remove any null entries
+    }));
 
-    if (!formattedLeaderboard || formattedLeaderboard.length === 0) {
-      return res.status(500).json({ error: 'No valid leaderboard data available' });
-    }
+    return res.status(200).json(formattedLeaderboard);
 
-    res.status(200).json({
-      leaderboard: formattedLeaderboard,
-      userRank,
-      userData: userData ? {
-        name: userData.name,
-        walletAddress: userData.walletAddress,
-        matchCount: userData.matchCount,
-        matchPoints: userData.matchPoints,
-        referralCount: userData.referralCount,
-        referralPoints: userData.referralPoints,
-        totalPoints: userData.totalPoints
-      } : null
-    });
+
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
     res.status(500).json({ error: 'Failed to fetch leaderboard' });

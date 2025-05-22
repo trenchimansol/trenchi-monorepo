@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -46,7 +46,7 @@ export default function Leaderboard() {
   };
   const { publicKey } = useWallet();
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -88,17 +88,14 @@ export default function Leaderboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [publicKey, leaderboardData]);
 
   useEffect(() => {
     fetchLeaderboard();
-    
-    // Set up 15-minute refresh interval
-    const refreshInterval = setInterval(fetchLeaderboard, 15 * 60 * 1000);
-    
-    // Cleanup interval on component unmount
-    return () => clearInterval(refreshInterval);
-  }, []);
+    const interval = setInterval(fetchLeaderboard, 900000); // 15 minutes
+
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
 
   if (isLoading) {
     return (
@@ -147,10 +144,8 @@ export default function Leaderboard() {
                 <Tr>
                   <Th>Rank</Th>
                   <Th>Profile</Th>
-                  <Th isNumeric>Matches (2pts)</Th>
-                  <Th isNumeric>Match Points</Th>
-                  <Th isNumeric>Referrals (0.25pts)</Th>
-                  <Th isNumeric>Referral Points</Th>
+                  <Th isNumeric>Matches (2PTS)</Th>
+                  <Th isNumeric>Referrals (0.25PTS)</Th>
                   <Th isNumeric>Total Points</Th>
                 </Tr>
               </Thead>
@@ -201,9 +196,7 @@ export default function Leaderboard() {
                         </Link>
                       </Td>
                       <Td isNumeric>{user.matchCount || 0}</Td>
-                      <Td isNumeric>{user.matchPoints || 0}</Td>
                       <Td isNumeric>{user.referralCount || 0}</Td>
-                      <Td isNumeric>{(user.referralPoints || 0).toFixed(2)}</Td>
                       <Td isNumeric fontWeight="bold" color="purple.500">
                         {(user.totalPoints || 0).toFixed(2)}
                       </Td>
@@ -240,9 +233,7 @@ export default function Leaderboard() {
                         </Link>
                       </Td>
                       <Td isNumeric>{userData.matchCount || 0}</Td>
-                      <Td isNumeric>{userData.matchPoints || 0}</Td>
                       <Td isNumeric>{userData.referralCount || 0}</Td>
-                      <Td isNumeric>{(userData.referralPoints || 0).toFixed(2)}</Td>
                       <Td isNumeric fontWeight="bold" color="purple.500">
                         {(userData.totalPoints || 0).toFixed(2)}
                       </Td>

@@ -15,11 +15,14 @@ import {
   Heading,
   useColorModeValue,
   Spinner,
-  Center
+  Center,
+  HStack,
+  keyframes,
 } from '@chakra-ui/react';
 import { Link as RouterLink } from 'react-router-dom';
 import Navigation from '../components/Navigation';
 import api from '../config/api';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 const rankChangeAnimation = keyframes`
   0% { transform: translateY(0); opacity: 0; }

@@ -367,7 +367,7 @@ function Profile() {
               name="name"
               value={profile.name}
               onChange={handleChange}
-              placeholder="Your name"
+              placeholder="Your name or X handle"
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}

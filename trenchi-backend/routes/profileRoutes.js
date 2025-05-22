@@ -48,6 +48,12 @@ router.post('/profile', async (req, res) => {
   try {
     const { walletAddress, referredBy } = req.body;
 
+    // Check if profile already exists
+    const existingProfile = await Profile.findOne({ walletAddress });
+    if (existingProfile) {
+      return res.status(400).json({ error: 'Profile already exists' });
+    }
+
     // Validate referral code if provided
     if (referredBy) {
       // Check if referral code exists
@@ -80,12 +86,16 @@ router.post('/profile', async (req, res) => {
     // Generate unique referral code
     const referralCode = await generateReferralCode(walletAddress);
     
+    // Create new profile with initial points
     const newProfile = new Profile({
       ...req.body,
       referralCode,
+      initialPoints: 10,
+      totalPoints: 10 // Start with signup bonus
     });
     
-    await newProfile.save();
+    const savedProfile = await newProfile.save();
+    res.status(201).json(savedProfile);
   } catch (error) {
     console.error('Error saving profile:', error);
     res.status(500).json({ error: 'Failed to save profile' });

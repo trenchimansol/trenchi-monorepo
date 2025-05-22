@@ -24,11 +24,12 @@ const profileSchema = new mongoose.Schema({
   dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   matchedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   // Points & Leaderboard System
+  initialPoints: { type: Number, default: 10 }, // Points for creating profile
   matchCount: { type: Number, default: 0 },
   matchPoints: { type: Number, default: 0 }, // 2 points per match
   referralCount: { type: Number, default: 0 },
   referralPoints: { type: Number, default: 0 }, // 0.25 points per referral
-  totalPoints: { type: Number, default: 0 }, // Combined points for leaderboard
+  totalPoints: { type: Number, default: 10 }, // Combined points for leaderboard (starts with initial points)
   
   // Referral System
   referralCode: { type: String, unique: true },

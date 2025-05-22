@@ -67,24 +67,63 @@ export default function Leaderboard() {
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to fetch leaderboard data');
+        throw new Error(data.error || 'Failed to fetch leaderboard data');
       }
 
-      const data = await response.json();
-      if (data && Array.isArray(data.leaderboard)) {
-        setLeaderboardData(data.leaderboard);
-        setUserRank(data.userRank);
-        setUserData(data.userData);
-      } else {
+      // Validate data structure
+      if (!data || !Array.isArray(data.leaderboard)) {
+        console.error('Invalid data format:', data);
         throw new Error('Invalid leaderboard data format');
       }
+
+      // Filter out any invalid entries
+      const validLeaderboard = data.leaderboard.filter(user => 
+        user && typeof user === 'object' && 
+        user.walletAddress && 
+        (user.name || user.walletAddress)
+      );
+
+      setLeaderboardData(validLeaderboard);
+      setUserRank(data.userRank);
+      setUserData(data.userData);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       setError(error.message);
       setLeaderboardData([]);
       setUserRank(null);
       setUserData(null);
+      
+      // If it's a 404 for the user's profile, create an empty one
+      if (error.message.includes('profile not found') && publicKey) {
+        try {
+          const createResponse = await fetch(api.createProfile(publicKey.toString()), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            },
+            body: JSON.stringify({
+              walletAddress: publicKey.toString(),
+              name: `User ${publicKey.toString().slice(0, 4)}`,
+              matchCount: 0,
+              matchPoints: 0,
+              referralCount: 0,
+              referralPoints: 0,
+              totalPoints: 0
+            })
+          });
+
+          if (createResponse.ok) {
+            // Retry fetching the leaderboard after creating the profile
+            fetchLeaderboard();
+          }
+        } catch (createError) {
+          console.error('Error creating profile:', createError);
+        }
+      }
     } finally {
       setIsLoading(false);
     }

@@ -4,12 +4,13 @@ const Message = require('../models/Message');
 const Profile = require('../models/Profile');
 
 // Get all conversations for a user
-router.get('/conversations/:walletAddress', async (req, res) => {
+router.get('/conversations/:walletAddress', async (req, res, next) => {
   try {
     const { walletAddress } = req.params;
 
     // Find all messages where the user is either sender or receiver
-    const messages = await Message.aggregate([
+    try {
+      const messages = await Message.aggregate([
       {
         $match: {
           $or: [
@@ -50,20 +51,24 @@ router.get('/conversations/:walletAddress', async (req, res) => {
       { $sort: { timestamp: -1 } }
     ]);
 
-    // Get user details for each conversation
-    const conversations = await Promise.all(messages.map(async (msg) => {
-      const otherProfile = await Profile.findOne({ walletAddress: msg._id });
-      return {
-        walletAddress: msg._id,
-        name: otherProfile ? otherProfile.name : 'Unknown User',
-        photos: otherProfile ? otherProfile.images : [],
-        lastMessage: msg.lastMessage,
-        timestamp: msg.timestamp,
-        unreadCount: msg.unreadCount
-      };
-    }));
+      // Get user details for each conversation
+      const conversations = await Promise.all(messages.map(async (msg) => {
+        const otherProfile = await Profile.findOne({ walletAddress: msg._id });
+        return {
+          walletAddress: msg._id,
+          name: otherProfile ? otherProfile.name : 'Unknown User',
+          photos: otherProfile ? otherProfile.images : [],
+          lastMessage: msg.lastMessage,
+          timestamp: msg.timestamp,
+          unreadCount: msg.unreadCount
+        };
+      }));
 
-    res.json(conversations);
+      res.json(conversations);
+    } catch (error) {
+      console.error('Error in /conversations:', error);
+      next(error);
+    }
   } catch (error) {
     console.error('Error fetching conversations:', error);
     res.status(500).json({ message: 'Error fetching conversations' });

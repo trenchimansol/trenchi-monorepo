@@ -287,8 +287,17 @@ function Profile() {
     }
 
     // Validate required fields
-    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking', 'totalWalletValue'];
-    const missingFields = requiredFields.filter(field => !profile[field]);
+    const requiredFields = [
+      'name', 'age', 'gender', 'bio', 'seeking', 'totalWalletValue',
+      'cryptoInterests', 'favoriteBlockchainNetworks', 'images'
+    ];
+    const missingFields = requiredFields.filter(field => {
+      if (field === 'images') {
+        // At least one image is required
+        return !profile.images.some(img => img !== '');
+      }
+      return !profile[field];
+    });
     
     if (missingFields.length > 0) {
       toast({
@@ -500,6 +509,7 @@ function Profile() {
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}
+              isRequired
             >
               {cryptoInterestOptions.map((option) => (
                 <option key={option} value={option}>
@@ -509,7 +519,7 @@ function Profile() {
             </Select>
           </FormControl>
 
-          <FormControl isRequired>
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
             <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Favorite Blockchain Networks</FormLabel>
             <Select
               name="favoriteBlockchainNetworks"
@@ -519,6 +529,7 @@ function Profile() {
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}
+              isRequired
             >
               {blockchainOptions.map((option) => (
                 <option key={option} value={option}>

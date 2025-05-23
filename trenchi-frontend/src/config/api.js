@@ -8,7 +8,7 @@ export const api = {
     
     // Profile endpoints
     getProfile: (walletAddress) => `${API_BASE_URL}/api/profile/${walletAddress}`,
-    updateProfile: `${API_BASE_URL}/api/profile`,
+    updateProfile: (walletAddress) => `${API_BASE_URL}/api/profile/${walletAddress}`,
     
     // Match endpoints
     getPotentialMatches: (userId) => `${API_BASE_URL}/api/potential-matches?userId=${userId}`,
@@ -19,6 +19,10 @@ export const api = {
     
     // Leaderboard endpoint
     leaderboard: `${API_BASE_URL}/api/leaderboard`,
+
+    // Subscription endpoints
+    getSubscription: (walletAddress) => `${API_BASE_URL}/api/subscription/${walletAddress}`,
+    updateSubscription: (walletAddress) => `${API_BASE_URL}/api/subscription/${walletAddress}`,
 };
 
 export default api;

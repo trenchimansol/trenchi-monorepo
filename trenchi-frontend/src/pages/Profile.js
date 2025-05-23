@@ -292,11 +292,22 @@ function Profile() {
     ];
     const missingFields = requiredFields.filter(field => {
       if (field === 'images') {
-        // At least one image is required
-        return !profile.images.some(img => img !== '');
+        // All 3 images are required
+        return profile.images.some(img => img === '');
       }
       return !profile[field];
     });
+
+    // Special message for missing photos
+    if (missingFields.includes('images')) {
+      toast({
+        title: 'Photos Required',
+        description: 'Please upload all 3 photos to continue',
+        status: 'error',
+        duration: 3000,
+      });
+      return;
+    }
     
     if (missingFields.length > 0) {
       toast({
@@ -313,7 +324,8 @@ function Profile() {
       const isNewProfile = !profile.isComplete;
 
       // Filter out empty images
-      const filteredImages = profile.images.filter(img => img !== '');
+      // All images are required now, so no need to filter
+      const filteredImages = profile.images;
 
       const response = await fetch(api.updateProfile(publicKey.toString()), {
         method: 'POST',
@@ -685,8 +697,10 @@ function Profile() {
               textAlign="center" 
               fontSize={{ base: 'xs', md: 'sm' }}
               mt={{ base: 1, md: 2 }}
+              color="red.500"
+              fontWeight="medium"
             >
-              Upload up to 3 photos. First photo will be your main profile picture.
+              All 3 photos are required. First photo will be your main profile picture.
             </FormHelperText>
           </FormControl>
 

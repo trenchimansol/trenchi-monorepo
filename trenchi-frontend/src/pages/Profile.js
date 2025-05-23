@@ -70,15 +70,20 @@ function Profile() {
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
-  // Validate profile completeness
+  // Initialize images array if needed
   useEffect(() => {
-    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking', 'cryptoInterests', 'favoriteBlockchainNetworks'];
-    const isComplete = requiredFields.every(field => profile[field]);
     if (!profile.images || !Array.isArray(profile.images)) {
       setProfile(prev => ({ ...prev, images: Array(3).fill('') }));
     }
+  }, []);
+
+  // Validate profile completeness
+  useEffect(() => {
+    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking', 'cryptoInterests', 'favoriteBlockchainNetworks'];
+    const isComplete = requiredFields.every(field => profile[field]) && 
+      Array.isArray(profile.images) && profile.images.every(img => img !== '');
     setProfile(prev => ({ ...prev, isComplete }));
-  }, [profile.name, profile.age, profile.gender, profile.bio, profile.seeking, profile.cryptoInterests, profile.favoriteBlockchainNetworks]);
+  }, [profile]);
 
   const handlePhotoUpload = (event, index) => {
     const file = event.target.files[0];
@@ -86,7 +91,9 @@ function Profile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfile(prev => {
-          const newImages = [...prev.images];
+          // Create a new array if images doesn't exist
+          const currentImages = Array.isArray(prev.images) ? prev.images : Array(3).fill('');
+          const newImages = [...currentImages];
           newImages[index] = reader.result;
           return { ...prev, images: newImages };
         });
@@ -97,7 +104,8 @@ function Profile() {
 
   const handleRemovePhoto = (index) => {
     setProfile(prev => {
-      const newImages = [...prev.images];
+      const currentImages = Array.isArray(prev.images) ? prev.images : Array(3).fill('');
+      const newImages = [...currentImages];
       newImages[index] = '';
       return { ...prev, images: newImages };
     });

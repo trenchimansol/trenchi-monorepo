@@ -54,12 +54,17 @@ function Profile() {
     name: '',
     age: '',
     gender: '',
-    seeking: '',
-    bio: '',
-    cryptoInterests: cryptoInterestOptions[0], // Default value
-    favoriteChains: blockchainOptions[0], // Default value
+    twitter: '',
+    tradingStyle: '',
+    location: '',
+    lookingFor: '',
+    favoriteCoin: '',
+    totalWalletValue: '',
+    totalTrenched: 'Coming Soon',
+    cryptoInterests: cryptoInterestOptions[0],
+    favoriteBlockchainNetworks: blockchainOptions[0],
+    images: ['', '', ''],
     walletAddress: '',
-    photos: ['', '', ''],
     isComplete: false,
     referralCode: '',
     referredBy: ''
@@ -72,10 +77,10 @@ function Profile() {
 
   // Validate profile completeness
   useEffect(() => {
-    const requiredFields = ['name', 'age', 'gender', 'seeking', 'bio', 'cryptoInterests', 'favoriteChains'];
+    const requiredFields = ['name', 'age', 'gender', 'twitter', 'tradingStyle', 'location', 'lookingFor', 'favoriteCoin', 'totalWalletValue'];
     const isComplete = requiredFields.every(field => profile[field]);
     setProfile(prev => ({ ...prev, isComplete }));
-  }, [profile.name, profile.age, profile.gender, profile.seeking, profile.bio, profile.cryptoInterests, profile.favoriteChains]);
+  }, [profile.name, profile.age, profile.gender, profile.twitter, profile.tradingStyle, profile.location, profile.lookingFor, profile.favoriteCoin, profile.totalWalletValue]);
 
   const handlePhotoUpload = (event, index) => {
     const file = event.target.files[0];
@@ -83,9 +88,9 @@ function Profile() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfile(prev => {
-          const newPhotos = [...prev.photos];
-          newPhotos[index] = reader.result;
-          return { ...prev, photos: newPhotos };
+          const newImages = [...prev.images];
+          newImages[index] = reader.result;
+          return { ...prev, images: newImages };
         });
       };
       reader.readAsDataURL(file);
@@ -94,9 +99,9 @@ function Profile() {
 
   const handleRemovePhoto = (index) => {
     setProfile(prev => {
-      const newPhotos = [...prev.photos];
-      newPhotos[index] = '';
-      return { ...prev, photos: newPhotos };
+      const newImages = [...prev.images];
+      newImages[index] = '';
+      return { ...prev, images: newImages };
     });
   };
 
@@ -393,109 +398,127 @@ function Profile() {
           </Heading>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Name</FormLabel>
+            <FormLabel>Name</FormLabel>
             <Input
               name="name"
               value={profile.name}
               onChange={handleChange}
-              placeholder="Your name or X handle"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
+              placeholder="Your name"
             />
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Age</FormLabel>
+            <FormLabel>Age</FormLabel>
             <Input
               name="age"
+              type="number"
               value={profile.age}
               onChange={handleChange}
               placeholder="Your age"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
             />
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Gender</FormLabel>
+            <FormLabel>Gender</FormLabel>
             <Select
               name="gender"
               value={profile.gender}
               onChange={handleChange}
               placeholder="Select gender"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
             >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="Man">Man</option>
+              <option value="Woman">Woman</option>
             </Select>
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Seeking</FormLabel>
-            <Select
-              name="seeking"
-              value={profile.seeking}
+            <FormLabel>Twitter Handle</FormLabel>
+            <Input
+              name="twitter"
+              value={profile.twitter}
               onChange={handleChange}
-              placeholder="Select preference"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
-            >
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </Select>
-          </FormControl>
-
-          <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Bio</FormLabel>
-            <Textarea
-              name="bio"
-              value={profile.bio}
-              onChange={handleChange}
-              placeholder="Tell us about yourself..."
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
-              rows={4}
+              placeholder="@yourhandle"
             />
-            <FormHelperText>Share your interests and what you're looking for</FormHelperText>
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Crypto Interests</FormLabel>
+            <FormLabel>Trading Style</FormLabel>
+            <Input
+              name="tradingStyle"
+              value={profile.tradingStyle}
+              onChange={handleChange}
+              placeholder="e.g., Day Trader, HODLer"
+            />
+          </FormControl>
+
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel>Location</FormLabel>
+            <Input
+              name="location"
+              value={profile.location}
+              onChange={handleChange}
+              placeholder="Your location"
+            />
+          </FormControl>
+
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel>Looking For</FormLabel>
+            <Input
+              name="lookingFor"
+              value={profile.lookingFor}
+              onChange={handleChange}
+              placeholder="What are you looking for?"
+            />
+          </FormControl>
+
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel>Favorite Coin</FormLabel>
+            <Input
+              name="favoriteCoin"
+              value={profile.favoriteCoin}
+              onChange={handleChange}
+              placeholder="Your favorite cryptocurrency"
+            />
+          </FormControl>
+
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel>Total Wallet Value</FormLabel>
+            <Input
+              name="totalWalletValue"
+              value={profile.totalWalletValue}
+              onChange={handleChange}
+              placeholder="Approximate total value in USD"
+            />
+          </FormControl>
+
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel>Crypto Interests</FormLabel>
             <Select
               name="cryptoInterests"
               value={profile.cryptoInterests}
               onChange={handleChange}
-              placeholder="Select interest"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
+              placeholder="Select your main crypto interest"
             >
               {cryptoInterestOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </Select>
-            <FormHelperText>What aspects of crypto interest you the most?</FormHelperText>
           </FormControl>
 
           <FormControl isRequired>
-            <FormLabel fontWeight="medium">Favorite Blockchain Networks</FormLabel>
+            <FormLabel>Favorite Blockchain Networks</FormLabel>
             <Select
-              name="favoriteChains"
-              value={profile.favoriteChains}
+              name="favoriteBlockchainNetworks"
+              value={profile.favoriteBlockchainNetworks}
               onChange={handleChange}
-              placeholder="Select network"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
+              placeholder="Select your favorite blockchain"
             >
               {blockchainOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>
+                  {option}
+                </option>
               ))}
             </Select>
             <FormHelperText>Which blockchain networks do you use the most?</FormHelperText>

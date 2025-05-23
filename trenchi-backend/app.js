@@ -6,27 +6,30 @@ const dotenv = require('dotenv');
 // Load environment variables first
 dotenv.config();
 
+const app = express();
+
+// CORS configuration - MUST be before any route handlers
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://trenchmatch.com');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
+// Basic middleware
+app.use(express.json());
+
 // Import routes
 const messagesRouter = require('./routes/messages');
 const subscriptionRoutes = require('./routes/subscription');
 const profileRoutes = require('./routes/profileRoutes');
 const leaderboardRoutes = require('./routes/leaderboard');
 const matchRoutes = require('./routes/matchRoutes');
-
-const app = express();
-
-// Enable CORS with environment-based configuration
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'https://trenchmatch.com',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-  exposedHeaders: ['Access-Control-Allow-Origin'],
-  maxAge: 86400 // Cache preflight for 24 hours
-}));
-
-// Parse JSON bodies
-app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {

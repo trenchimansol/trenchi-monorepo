@@ -49,16 +49,10 @@ export default function Leaderboard() {
     let isMounted = true;
 
     const fetchData = async () => {
+      if (!isMounted) return;
       try {
         setIsLoading(true);
         setError(null);
-
-        // Store previous ranks
-        const prevRanks = {};
-        leaderboardData.forEach((user, index) => {
-          prevRanks[user.walletAddress] = index + 1;
-        });
-        setPreviousRanks(prevRanks);
 
         const response = await fetch(
           `${api.leaderboard}${publicKey ? `?userWallet=${publicKey.toString()}` : ''}`,
@@ -85,6 +79,14 @@ export default function Leaderboard() {
         }
 
         if (isMounted) {
+          // Store previous ranks before updating data
+          const prevRanks = {};
+          leaderboardData.forEach((user, index) => {
+            prevRanks[user.walletAddress] = index + 1;
+          });
+          setPreviousRanks(prevRanks);
+          
+          // Update leaderboard data
           setLeaderboardData(data);
         }
       } catch (error) {
@@ -107,7 +109,7 @@ export default function Leaderboard() {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [publicKey, leaderboardData]);
+  }, [publicKey]);
 
   return (
     <Box minH="100vh" bg={bgColor}>

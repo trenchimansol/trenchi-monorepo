@@ -290,10 +290,14 @@ function Profile() {
       return;
     }
 
-    if (!profile.isComplete) {
+    // Validate required fields
+    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking'];
+    const missingFields = requiredFields.filter(field => !profile[field]);
+    
+    if (missingFields.length > 0) {
       toast({
-        title: 'Error',
-        description: 'Please fill in all required fields',
+        title: 'Missing Required Fields',
+        description: `Please fill in: ${missingFields.join(', ')}`,
         status: 'error',
         duration: 3000,
       });
@@ -303,6 +307,10 @@ function Profile() {
     try {
       setLoading(true);
       const isNewProfile = !profile.isComplete;
+
+      // Filter out empty images
+      const filteredImages = profile.images.filter(img => img !== '');
+
       const response = await fetch(api.updateProfile(publicKey.toString()), {
         method: 'POST',
         headers: {
@@ -313,13 +321,15 @@ function Profile() {
         credentials: 'include',
         body: JSON.stringify({
           ...profile,
+          images: filteredImages,
           walletAddress: publicKey.toString(),
           points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update profile');
       }
 
       const data = await response.json();
@@ -609,9 +619,10 @@ function Profile() {
                       bg="gray.50"
                       _dark={{ bg: 'gray.700' }}
                     >
-                      {profile.photos && profile.photos[index] ? (
+                      <Box position="relative" w="full" h="full">
+                      {profile.images[index] ? (
                         <Image
-                          src={profile.photos[index]}
+                          src={profile.images[index]}
                           alt={`Photo ${index + 1}`}
                           objectFit="cover"
                           w="full"
@@ -628,7 +639,8 @@ function Profile() {
                         </Button>
                       )}
                     </Box>
-                    {profile.photos && profile.photos[index] && (
+                    </Box>
+                    {profile.images[index] && (
                       <IconButton
                         icon={<CloseIcon />}
                         size="sm"

@@ -32,10 +32,11 @@ router.get('/potential/:walletAddress', async (req, res) => {
     // Filter by gender preference
     const potential = await Profile.find({
       _id: { $nin: excludeIds },
-      // Show only profiles that match the user's seeking preference
-      gender: currentUser.seeking,
-      // And where we match their seeking preference
-      seeking: currentUser.gender
+      // Show only profiles that match the user's seeking preference AND who are seeking the user's gender
+      $and: [
+        { gender: currentUser.seeking }, // Their gender matches what we're seeking
+        { seeking: currentUser.gender }  // They are seeking our gender
+      ]
     });
 
     res.status(200).json(potential);

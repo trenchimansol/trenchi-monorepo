@@ -67,6 +67,12 @@ function Profile() {
 
   const genderOptions = ['Male', 'Female'];
   const seekingOptions = ['Male', 'Female'];
+  
+  // Helper function to get seeking label
+  const getSeekingLabel = (gender, seeking) => {
+    if (!gender || !seeking) return '';
+    return `${gender === 'Male' ? 'Man' : 'Woman'} seeking ${seeking === 'Male' ? 'man' : 'woman'}`;
+  };
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
 
@@ -456,36 +462,41 @@ function Profile() {
             />
           </FormControl>
 
-          <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Gender</FormLabel>
+          <FormControl isRequired>
+            <FormLabel>I am a</FormLabel>
             <Select
               name="gender"
               value={profile.gender}
               onChange={handleChange}
               placeholder="Select gender"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
             >
-              <option value="Man">Man</option>
-              <option value="Woman">Woman</option>
+              {genderOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
             </Select>
           </FormControl>
 
-          <FormControl isRequired mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Seeking</FormLabel>
+          <FormControl isRequired>
+            <FormLabel>Looking for a</FormLabel>
             <Select
               name="seeking"
               value={profile.seeking}
               onChange={handleChange}
               placeholder="Select preference"
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
             >
-              <option value="Man">Man</option>
-              <option value="Woman">Woman</option>
+              {seekingOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
             </Select>
+            {profile.gender && profile.seeking && (
+              <FormHelperText color="blue.500">
+                {getSeekingLabel(profile.gender, profile.seeking)}
+              </FormHelperText>
+            )}
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>

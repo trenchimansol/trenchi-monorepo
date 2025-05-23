@@ -8,22 +8,20 @@ dotenv.config();
 
 const app = express();
 
-// Add CORS headers to every response
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://trenchmatch.com');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
+// Configure CORS
+const corsOptions = {
+  origin: 'https://trenchmatch.com',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Origin'],
+  credentials: true,
+  maxAge: 86400
+};
 
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  next();
-});
+// Handle CORS preflight requests
+app.options('*', cors(corsOptions));
 
-// Enable standard CORS
-app.use(cors());
+// Enable CORS for all routes
+app.use(cors(corsOptions));
 
 // Basic middleware
 app.use(express.json());

@@ -23,6 +23,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 const allowedOrigins = [
   'http://localhost:3000',  // local development
   'https://transcendent-gaufre-9c484c.netlify.app', // Netlify domain
+  'https://trenchmatch.com', // production domain
   process.env.FRONTEND_URL, // production frontend
 ].filter(Boolean); // removes any undefined values
 

@@ -38,11 +38,13 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
   }
 
   const prevPhoto = () => {
+    if (!profile?.images?.length) return;
     setCurrentPhotoIndex((prev) => (prev > 0 ? prev - 1 : prev));
   };
 
   const nextPhoto = () => {
-    const maxIndex = (profile.photos?.length || 1) - 1;
+    if (!profile?.images?.length) return;
+    const maxIndex = profile.images.length - 1;
     setCurrentPhotoIndex((prev) => (prev < maxIndex ? prev + 1 : prev));
   };
 
@@ -71,13 +73,13 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
       >
         <Box position="relative">
           <Image
-            src={profile?.photos?.[currentPhotoIndex] || profile?.profileImage || 'https://via.placeholder.com/400x600'}
+            src={profile?.images?.[currentPhotoIndex] || 'https://via.placeholder.com/400x600'}
             alt={`${profile.name} - Photo ${currentPhotoIndex + 1}`}
             objectFit="cover"
             w="100%"
             h={{ base: '380px', sm: '440px' }}
           />
-          {profile?.photos?.length > 1 && (
+          {profile?.images?.length > 1 && (
             <>
               <IconButton
                 icon={<ChevronLeftIcon boxSize={8} />}
@@ -102,7 +104,7 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
                 colorScheme="whiteAlpha"
                 color="white"
                 onClick={nextPhoto}
-                isDisabled={currentPhotoIndex === profile.photos.length - 1 || !profile.photos[currentPhotoIndex + 1]}
+                isDisabled={currentPhotoIndex === profile.images.length - 1 || !profile.images[currentPhotoIndex + 1]}
                 _hover={{ bg: 'whiteAlpha.300' }}
               />
             </>
@@ -114,7 +116,7 @@ export default function MatchCard({ profile, onLike, onDislike, onTip, loading }
             transform="translateX(-50%)"
             gap={2}
           >
-            {profile?.photos?.map((photo, index) => photo && (
+            {profile?.images?.map((image, index) => image && (
               <Box
                 key={index}
                 w={2}

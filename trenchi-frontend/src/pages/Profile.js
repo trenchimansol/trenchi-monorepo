@@ -65,13 +65,13 @@ function Profile() {
     referredBy: ''
   });
 
-  const genderOptions = ['Male', 'Female'];
-  const seekingOptions = ['Male', 'Female'];
+  const genderOptions = ['Man', 'Woman'];
+  const seekingOptions = ['Man', 'Woman'];
   
   // Helper function to get seeking label
   const getSeekingLabel = (gender, seeking) => {
     if (!gender || !seeking) return '';
-    return `${gender === 'Male' ? 'Man' : 'Woman'} seeking ${seeking === 'Male' ? 'man' : 'woman'}`;
+    return `${gender} seeking ${seeking.toLowerCase()}`;
   };
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');

@@ -15,13 +15,15 @@ router.get('/:walletAddress', async (req, res) => {
     if (profile) {
       res.status(200).json(profile);
     } else {
-      // For new accounts, return 200 with empty profile
+      // For new accounts, return 200 with empty profile and default values
       res.status(200).json({
         walletAddress,
         isNewUser: true,
         totalPoints: 0,
         referralCount: 0,
-        referralPoints: 0
+        referralPoints: 0,
+        cryptoInterests: 'Trading Memes',
+        favoriteBlockchainNetworks: 'Solana'
       });
     }
   } catch (error) {

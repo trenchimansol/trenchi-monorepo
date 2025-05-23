@@ -1,6 +1,21 @@
 // models/Profile.js
 const mongoose = require('mongoose');
 
+const CRYPTO_INTERESTS = [
+  'Trading Memes',
+  'Learning Crypto',
+  'Finding Web3 Love',
+  'Just for Fun'
+];
+
+const BLOCKCHAIN_NETWORKS = [
+  'Solana',
+  'Bitcoin',
+  'Ethereum',
+  'Binance',
+  'Other'
+];
+
 const profileSchema = new mongoose.Schema({
   walletAddress: { type: String },
   name: { type: String, required: true },
@@ -13,6 +28,8 @@ const profileSchema = new mongoose.Schema({
   favoriteCoin: { type: String, required: true },
   totalWalletValue: { type: String, required: true },
   totalTrenched: { type: String, default: 'Coming Soon' },
+  cryptoInterests: { type: String, enum: CRYPTO_INTERESTS, default: CRYPTO_INTERESTS[0] },
+  favoriteBlockchainNetworks: { type: String, enum: BLOCKCHAIN_NETWORKS, default: BLOCKCHAIN_NETWORKS[0] },
   
   // Updated to store an array of Base64 strings
   images: {

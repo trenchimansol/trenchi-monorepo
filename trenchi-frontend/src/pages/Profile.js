@@ -140,7 +140,12 @@ function Profile() {
 
     try {
       setLoading(true);
-      const response = await fetch(api.getProfile(publicKey.toString()));
+      const response = await fetch(api.getProfile(publicKey.toString()), {
+        headers: {
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
+      });
       
       if (response.ok) {
         const data = await response.json();
@@ -220,6 +225,11 @@ function Profile() {
     try {
       const response = await fetch(`${api.baseUrl}/profile/${publicKey.toString()}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
       });
 
       if (!response.ok) throw new Error('Failed to delete account');
@@ -285,12 +295,13 @@ function Profile() {
     try {
       setLoading(true);
       const isNewProfile = !profile.isComplete;
-      const method = isNewProfile ? 'POST' : 'PUT';
       const response = await fetch(api.updateProfile(publicKey.toString()), {
-        method,
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...profile,
           points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles

@@ -95,26 +95,26 @@ router.post('/like/:walletAddress', async (req, res) => {
     }
 
     // Prevent duplicate likes
-    if (currentUser.likedUsers.includes(likedUserId)) {
+    if (currentUser.likedUsers.includes(likedUser._id)) {
       return res.status(400).json({ error: 'You have already liked this user.' });
     }
 
-    // Add likedUserId to currentUser's likedUsers array
-    currentUser.likedUsers.push(likedUserId);
+    // Add likedUser._id to currentUser's likedUsers array
+    currentUser.likedUsers.push(likedUser._id);
 
     // Remove from dislikedUsers if present
     currentUser.dislikedUsers = currentUser.dislikedUsers.filter(
-      id => id.toString() !== likedUserId
+      id => id.toString() !== likedUser._id.toString()
     );
 
     let isMatch = false;
     // If likedUser also liked currentUser, form a match
-    if (likedUser.likedUsers.includes(currentUserId)) {
-      if (!currentUser.matchedUsers.includes(likedUserId)) {
-        currentUser.matchedUsers.push(likedUserId);
+    if (likedUser.likedUsers.includes(currentUser._id)) {
+      if (!currentUser.matchedUsers.includes(likedUser._id)) {
+        currentUser.matchedUsers.push(likedUser._id);
       }
-      if (!likedUser.matchedUsers.includes(currentUserId)) {
-        likedUser.matchedUsers.push(currentUserId);
+      if (!likedUser.matchedUsers.includes(currentUser._id)) {
+        likedUser.matchedUsers.push(currentUser._id);
       }
       isMatch = true;
     }
@@ -147,14 +147,19 @@ router.post('/dislike/:walletAddress', async (req, res) => {
       return res.status(404).json({ error: 'Current user not found' });
     }
 
+    const dislikedUser = await Profile.findOne({ walletAddress: dislikedWalletAddress });
+    if (!dislikedUser) {
+      return res.status(404).json({ error: 'User to dislike not found' });
+    }
+
     // If the user has already liked this person, disliking is not allowed
-    if (currentUser.likedUsers.includes(dislikedUserId)) {
+    if (currentUser.likedUsers.includes(dislikedUser._id)) {
       return res.status(400).json({ error: 'You have already liked this user, cannot dislike.' });
     }
 
-    // Otherwise, add dislikedUserId if not already present
-    if (!currentUser.dislikedUsers.includes(dislikedUserId)) {
-      currentUser.dislikedUsers.push(dislikedUserId);
+    // Otherwise, add dislikedUser._id if not already present
+    if (!currentUser.dislikedUsers.includes(dislikedUser._id)) {
+      currentUser.dislikedUsers.push(dislikedUser._id);
     }
 
     await currentUser.save();
@@ -187,10 +192,10 @@ router.post('/unmatch/:walletAddress', async (req, res) => {
 
     // Remove each other from matchedUsers
     currentUser.matchedUsers = currentUser.matchedUsers.filter(
-      id => id.toString() !== unmatchedUserId
+      id => id.toString() !== unmatchedUser._id.toString()
     );
     unmatchedUser.matchedUsers = unmatchedUser.matchedUsers.filter(
-      id => id.toString() !== currentUserId
+      id => id.toString() !== currentUser._id.toString()
     );
 
     await currentUser.save();

@@ -72,10 +72,13 @@ function Profile() {
 
   // Validate profile completeness
   useEffect(() => {
-    const requiredFields = ['name', 'age', 'gender', 'twitter', 'tradingStyle', 'location', 'lookingFor', 'favoriteCoin', 'totalWalletValue'];
+    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking', 'cryptoInterests', 'favoriteBlockchainNetworks'];
     const isComplete = requiredFields.every(field => profile[field]);
+    if (!profile.images || !Array.isArray(profile.images)) {
+      setProfile(prev => ({ ...prev, images: Array(3).fill('') }));
+    }
     setProfile(prev => ({ ...prev, isComplete }));
-  }, [profile.name, profile.age, profile.gender, profile.twitter, profile.tradingStyle, profile.location, profile.lookingFor, profile.favoriteCoin, profile.totalWalletValue]);
+  }, [profile.name, profile.age, profile.gender, profile.bio, profile.seeking, profile.cryptoInterests, profile.favoriteBlockchainNetworks]);
 
   const handlePhotoUpload = (event, index) => {
     const file = event.target.files[0];
@@ -159,9 +162,9 @@ function Profile() {
           seeking: data.seeking || '',
           bio: data.bio || '',
           cryptoInterests: data.cryptoInterests || cryptoInterestOptions[0],
-          favoriteChains: data.favoriteChains || blockchainOptions[0],
+          favoriteBlockchainNetworks: data.favoriteBlockchainNetworks || blockchainOptions[0],
           walletAddress: data.walletAddress || publicKey.toString(),
-          photos: data.photos || ['', '', ''],
+          images: data.images || Array(3).fill(''),
           referralCode: data.referralCode || '',
           referredBy: data.referredBy || '',
           matchCount: data.matchCount || 0,
@@ -185,9 +188,9 @@ function Profile() {
               seeking: '',
               bio: '',
               cryptoInterests: cryptoInterestOptions[0],
-              favoriteChains: blockchainOptions[0],
+              favoriteBlockchainNetworks: blockchainOptions[0],
               walletAddress: publicKey.toString(),
-              photos: ['', '', ''],
+              images: Array(3).fill(''),
               referralCode: '',
               referredBy: '',
               matchCount: 0,
@@ -252,9 +255,9 @@ function Profile() {
         seeking: '',
         bio: '',
         cryptoInterests: cryptoInterestOptions[0],
-        favoriteChains: blockchainOptions[0],
+        favoriteBlockchainNetworks: blockchainOptions[0],
         walletAddress: '',
-        photos: ['', '', ''],
+        images: Array(3).fill(''),
         isComplete: false,
         referralCode: '',
         referredBy: ''
@@ -323,10 +326,6 @@ function Profile() {
       setLoading(true);
       const isNewProfile = !profile.isComplete;
 
-      // Filter out empty images
-      // All images are required now, so no need to filter
-      const filteredImages = profile.images;
-
       const response = await fetch(api.updateProfile(publicKey.toString()), {
         method: 'POST',
         headers: {
@@ -337,7 +336,6 @@ function Profile() {
         credentials: 'include',
         body: JSON.stringify({
           ...profile,
-          images: filteredImages,
           walletAddress: publicKey.toString(),
           points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles
         }),

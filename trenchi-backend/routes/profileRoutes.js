@@ -8,7 +8,7 @@ const Profile = require('../models/Profile'); // Ensure the path is correct
  * Checks if a profile exists for the provided wallet address.
  * The wallet address serves as the unique identifier (i.e., the login/password).
  */
-router.get('/profile/:walletAddress', async (req, res) => {
+router.get('/:walletAddress', async (req, res) => {
   try {
     const walletAddress = req.params.walletAddress;
     const profile = await Profile.findOne({ walletAddress });
@@ -44,7 +44,7 @@ const generateReferralCode = async (walletAddress) => {
   return code;
 };
 
-router.post('/profile', async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { walletAddress, referredBy } = req.body;
 
@@ -106,7 +106,7 @@ router.post('/profile', async (req, res) => {
  * DELETE /api/profile/:walletAddress
  * Deletes a user's profile and all associated data
  */
-router.delete('/profile/:walletAddress', async (req, res) => {
+router.delete('/:walletAddress', async (req, res) => {
   try {
     const { walletAddress } = req.params;
 

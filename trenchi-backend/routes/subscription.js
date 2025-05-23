@@ -1,10 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Subscription = require('../models/Subscription');
-const { authenticateToken } = require('../middleware/auth');
 
 // Create or update subscription
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { walletAddress, transactionSignature, plan, expirationDate } = req.body;
 
@@ -36,7 +35,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // Get subscription status
-router.get('/:walletAddress', authenticateToken, async (req, res) => {
+router.get('/:walletAddress', async (req, res) => {
   try {
     const { walletAddress } = req.params;
     const subscription = await Subscription.findOne({ walletAddress });

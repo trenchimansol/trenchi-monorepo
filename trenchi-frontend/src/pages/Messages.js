@@ -415,10 +415,19 @@ export default function Messages() {
                     <VStack spacing={4} w="100%" align="start" p={4}>
                       <HStack w="100%" justify="space-between" align="center">
                         <VStack align="start" spacing={1}>
-                          <Text fontSize="2xl" fontWeight="bold">{selectedMatch.name}</Text>
+                          <HStack align="center" spacing={2}>
+                            <Text fontSize="2xl" fontWeight="bold">{selectedMatch.name}</Text>
+                            <Text fontSize="2xl" color="gray.500">{selectedMatch.profile.age || ''}</Text>
+                          </HStack>
+                          <Badge colorScheme="purple">{selectedMatch.profile.gender || 'N/A'}</Badge>
                           <Text color="gray.500">{selectedMatch.profile.location || 'No location'}</Text>
                         </VStack>
                       </HStack>
+
+                      <Box w="100%">
+                        <Text fontWeight="semibold" mb={2}>Portfolio Value</Text>
+                        <Text fontSize="lg" color="green.400">{selectedMatch.profile.portfolioValueSOL || 0} SOL</Text>
+                      </Box>
 
                       <Box w="100%">
                         <Text fontWeight="semibold" mb={2}>Bio</Text>
@@ -428,18 +437,26 @@ export default function Messages() {
                       <Box w="100%">
                         <Text fontWeight="semibold" mb={2}>Interests</Text>
                         <Wrap>
-                          {selectedMatch.profile.interests?.map((interest, i) => (
-                            <Badge key={i} colorScheme="blue">{interest}</Badge>
-                          )) || 'No interests listed'}
+                          {selectedMatch.profile.interests?.length > 0 ? (
+                            selectedMatch.profile.interests.map((interest, i) => (
+                              <Badge key={i} colorScheme="blue">{interest}</Badge>
+                            ))
+                          ) : (
+                            <Text color="gray.500">No interests listed</Text>
+                          )}
                         </Wrap>
                       </Box>
 
                       <Box w="100%">
                         <Text fontWeight="semibold" mb={2}>Favorite Chains</Text>
                         <Wrap>
-                          {selectedMatch.profile.favoriteChains?.map((chain, i) => (
-                            <Badge key={i} colorScheme="purple">{chain}</Badge>
-                          )) || 'No chains listed'}
+                          {selectedMatch.profile.favoriteChains?.length > 0 ? (
+                            selectedMatch.profile.favoriteChains.map((chain, i) => (
+                              <Badge key={i} colorScheme="purple">{chain}</Badge>
+                            ))
+                          ) : (
+                            <Text color="gray.500">No chains listed</Text>
+                          )}
                         </Wrap>
                       </Box>
                     </VStack>

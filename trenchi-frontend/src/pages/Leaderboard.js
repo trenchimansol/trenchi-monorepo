@@ -45,19 +45,21 @@ export default function Leaderboard() {
   };
   const { publicKey } = useWallet();
 
-  const fetchLeaderboard = useCallback(async (retryCount = 0) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      // Store previous ranks
-      const prevRanks = {};
-      leaderboardData.forEach((user, index) => {
-        prevRanks[user.walletAddress] = index + 1;
-      });
-      setPreviousRanks(prevRanks);
+  useEffect(() => {
+    let isMounted = true;
 
+    const fetchData = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+
+        // Store previous ranks
+        const prevRanks = {};
+        leaderboardData.forEach((user, index) => {
+          prevRanks[user.walletAddress] = index + 1;
+        });
+        setPreviousRanks(prevRanks);
+
         const response = await fetch(
           `${api.leaderboard}${publicKey ? `?userWallet=${publicKey.toString()}` : ''}`,
           {
@@ -76,47 +78,36 @@ export default function Leaderboard() {
         
         if (!Array.isArray(data)) {
           console.warn('Invalid leaderboard data format, using empty array');
-          setLeaderboardData([]);
+          if (isMounted) {
+            setLeaderboardData([]);
+          }
           return;
         }
 
-        setLeaderboardData(data);
+        if (isMounted) {
+          setLeaderboardData(data);
+        }
       } catch (error) {
         console.error('Error fetching leaderboard:', error);
-        setError(error.message);
-        setLeaderboardData([]);
-      }
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      setError(error.message);
-      setLeaderboardData([]);
-      
-      // Retry in case of network error
-      if (retryCount < 3) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-        return fetchLeaderboard(retryCount + 1);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [publicKey, isLoading]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await fetchLeaderboard();
-      } catch (error) {
-        console.error('Error in initial leaderboard fetch:', error);
+        if (isMounted) {
+          setError(error.message);
+          setLeaderboardData([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
+
     fetchData();
-  }, [fetchLeaderboard]);
+    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
 
-  useEffect(() => {
-    const interval = setInterval(fetchLeaderboard, 900000); // 15 minutes
-
-    return () => clearInterval(interval);
-  }, [fetchLeaderboard]);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [publicKey, leaderboardData]);
 
   return (
     <Box minH="100vh" bg={bgColor}>
@@ -145,7 +136,7 @@ export default function Leaderboard() {
             <Center py={20}>
               <VStack spacing={4}>
                 <Text color="red.500">{error}</Text>
-                <Button colorScheme="purple" onClick={fetchLeaderboard}>
+                <Button colorScheme="purple" onClick={() => setIsLoading(true)}>
                   Try Again
                 </Button>
               </VStack>

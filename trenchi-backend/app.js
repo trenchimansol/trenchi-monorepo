@@ -15,9 +15,9 @@ const matchRoutes = require('./routes/matchRoutes');
 
 const app = express();
 
-// Enable CORS with a single, clean configuration
+// Enable CORS with environment-based configuration
 app.use(cors({
-  origin: true, // Allow all origins for now
+  origin: process.env.CORS_ORIGIN || 'https://trenchmatch.com',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],

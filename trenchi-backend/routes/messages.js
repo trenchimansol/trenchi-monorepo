@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
-const User = require('../models/User');
+const Profile = require('../models/Profile');
 
 // Get all conversations for a user
 router.get('/conversations/:walletAddress', async (req, res) => {
@@ -52,11 +52,11 @@ router.get('/conversations/:walletAddress', async (req, res) => {
 
     // Get user details for each conversation
     const conversations = await Promise.all(messages.map(async (msg) => {
-      const otherUser = await User.findOne({ walletAddress: msg._id });
+      const otherProfile = await Profile.findOne({ walletAddress: msg._id });
       return {
         walletAddress: msg._id,
-        name: otherUser ? otherUser.name : 'Unknown User',
-        avatar: otherUser ? otherUser.avatar : null,
+        name: otherProfile ? otherProfile.name : 'Unknown User',
+        photos: otherProfile ? otherProfile.images : [],
         lastMessage: msg.lastMessage,
         timestamp: msg.timestamp,
         unreadCount: msg.unreadCount

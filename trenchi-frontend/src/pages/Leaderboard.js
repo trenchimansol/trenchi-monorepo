@@ -57,9 +57,6 @@ export default function Leaderboard() {
       });
       setPreviousRanks(prevRanks);
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
-
       try {
         const response = await fetch(
           `${api.leaderboard}${publicKey ? `?userWallet=${publicKey.toString()}` : ''}`,
@@ -68,11 +65,8 @@ export default function Leaderboard() {
             headers: {
               'Content-Type': 'application/json',
             },
-            signal: controller.signal
           }
         );
-
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
           // Only retry on server errors or network issues
@@ -155,15 +149,10 @@ export default function Leaderboard() {
   return (
     <Box minH="100vh" bg={bgColor}>
       <Navigation />
-      <Container maxW="container.xl" py={4} px={{ base: 2, md: 8 }}>
+      <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
-          <Heading
-            textAlign="center"
-            bgGradient="linear(to-r, purple.400, pink.400)"
-            bgClip="text"
-            fontSize={{ base: '2xl', md: '4xl' }}
-            fontWeight="bold"
-          >
+          <Box h="40px" /> {/* Spacer */}
+          <Heading size="lg" textAlign="center" mb={8}>
             Top 20 Trenchers
           </Heading>
           <Text 
@@ -254,11 +243,12 @@ export default function Leaderboard() {
                             gap={3}
                           >
                             <Image
-                              src={user.profileImage || 'https://via.placeholder.com/40'}
+                              src={user.profileImage || '/default-avatar.png'}
                               alt={user.name || user.walletAddress.slice(0, 6)}
                               boxSize={{ base: '32px', md: '40px' }}
                               borderRadius="full"
                               objectFit="cover"
+                              fallbackSrc="/default-avatar.png"
                             />
                             <Text fontSize={{ base: 'sm', md: 'md' }}>{user.name || user.walletAddress.slice(0, 6)}</Text>
                           </Link>

@@ -84,61 +84,6 @@ export default function Matching() {
     checkSubscription();
   }, [publicKey]);
 
-  // Default matches for UI testing
-  const defaultMatches = [
-    {
-      _id: '1',
-      name: 'Alice',
-      age: 28,
-      gender: 'female',
-      photos: [
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb',
-        'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04'
-      ],
-      profileImage: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-      bio: 'DeFi enthusiast and NFT collector. Love exploring new blockchain projects and meeting fellow crypto enthusiasts.',
-      cryptoInterests: 'DeFi, NFTs, DAOs, Web3 Gaming',
-      favoriteChains: 'Solana',
-      portfolioValueSOL: '2500',
-      walletAddress: '5nh3aS9Nm1DH2MDtZU6MPuZyYtA3xXx5YyeS9uxtfk3N'
-    },
-    {
-      _id: '2',
-      name: 'Bob',
-      age: 32,
-      gender: 'male',
-      photos: [
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d',
-        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
-        'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce'
-      ],
-      profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d',
-      bio: 'Blockchain developer with a passion for building decentralized applications. Looking for someone to share crypto adventures with.',
-      cryptoInterests: 'Smart Contracts, DeFi, Tokenomics',
-      favoriteChains: 'Solana',
-      portfolioValueSOL: '5000',
-      walletAddress: '5nh3aS9Nm1DH2MDtZU6MPuZyYtA3xXx5YyeS9uxtfk3N'
-    },
-    {
-      _id: '3',
-      name: 'Carol',
-      age: 25,
-      gender: 'female',
-      photos: [
-        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80',
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2',
-        'https://images.unsplash.com/photo-1531123897727-8f129e1688ce'
-      ],
-      profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80',
-      bio: 'Crypto trader and NFT artist. Love discussing market trends and discovering new projects.',
-      cryptoInterests: 'NFT Art, Trading, Yield Farming',
-      favoriteChains: 'Solana',
-      portfolioValueSOL: '1500',
-      walletAddress: '5nh3aS9Nm1DH2MDtZU6MPuZyYtA3xXx5YyeS9uxtfk3N'
-    }
-  ];
-
   const checkPremiumStatus = () => {
     const premiumExpiration = localStorage.getItem('premiumExpiration');
     const walletAddress = localStorage.getItem('walletAddress');
@@ -209,30 +154,16 @@ export default function Matching() {
       //    - User's gender preference
       //    - Not previously rejected
       //    - Not already matched
-      // const response = await fetch(api.getPotentialMatches({
-      //   walletAddress: publicKey.toString(),
-      //   seeking: userProfile.seeking,
-      // }));
-      // const matches = await response.json();
-
-      // For development, simulate filtered matches
-      const userProfile = {
-        seeking: 'female',
-        rejectedProfiles: [], // In production, this would come from the database
-        matches: [] // In production, this would come from the database
-      };
-
-      // Filter matches based on:
-      // 1. Gender preference
-      // 2. Not previously rejected
-      // 3. Not already matched
-      const filteredMatches = defaultMatches.filter(match => {
-        return match.gender === userProfile.seeking &&
-               !userProfile.rejectedProfiles.includes(match._id) &&
-               !userProfile.matches.includes(match._id);
-      });
-
-      setPotentialMatches(filteredMatches);
+      const response = await fetch(api.getPotentialMatches({
+        walletAddress: publicKey.toString(),
+      }));
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPotentialMatches(data);
+      } else {
+        setPotentialMatches([]);
+      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -436,7 +367,7 @@ return (
 
       {/* Main Content */}
       {publicKey && isLoading ? (
-        <Center h="calc(100vh - 64px)">
+        <Center h="60vh">
           <VStack spacing={4}>
             <Spinner
               thickness="4px"
@@ -499,13 +430,36 @@ return (
               transform="translateZ(0)"
               transition="transform 0.3s ease-in-out"
             >
-              <MatchCard
-                profile={potentialMatches[currentIndex]}
-                onLike={handleLike}
-                onDislike={handleDislike}
-                onTip={tipModal.onOpen}
-                loading={actionLoading}
-              />
+              {isLoading ? (
+                <Center h="60vh">
+                  <Spinner size="xl" color="yellow.500" />
+                </Center>
+              ) : potentialMatches.length === 0 || currentIndex >= potentialMatches.length ? (
+                <Center h="60vh" flexDirection="column" gap={4}>
+                  <Text fontSize="xl" textAlign="center" color="gray.500">
+                    You have seen everyone.
+                    <br />
+                    Come back later!
+                  </Text>
+                  <Button
+                    colorScheme="yellow"
+                    onClick={() => {
+                      setCurrentIndex(0);
+                      fetchPotentialMatches();
+                    }}
+                  >
+                    Check Again
+                  </Button>
+                </Center>
+              ) : (
+                <MatchCard
+                  profile={potentialMatches[currentIndex]}
+                  onLike={handleLike}
+                  onDislike={handleDislike}
+                  onTip={tipModal.onOpen}
+                  loading={actionLoading}
+                />
+              )}
             </Box>
           </Container>
         </Container>

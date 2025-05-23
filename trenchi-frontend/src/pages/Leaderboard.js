@@ -46,7 +46,6 @@ export default function Leaderboard() {
   const { publicKey } = useWallet();
 
   const fetchLeaderboard = useCallback(async (retryCount = 0) => {
-    if (isLoading) return;
     try {
       setIsLoading(true);
       setError(null);
@@ -137,7 +136,17 @@ export default function Leaderboard() {
   }, [publicKey, isLoading]);
 
   useEffect(() => {
-    fetchLeaderboard();
+    const fetchData = async () => {
+      try {
+        await fetchLeaderboard();
+      } catch (error) {
+        console.error('Error in initial leaderboard fetch:', error);
+      }
+    };
+    fetchData();
+  }, [fetchLeaderboard]);
+
+  useEffect(() => {
     const interval = setInterval(fetchLeaderboard, 900000); // 15 minutes
 
     return () => clearInterval(interval);

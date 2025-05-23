@@ -54,16 +54,11 @@ function Profile() {
     name: '',
     age: '',
     gender: '',
-    twitter: '',
-    tradingStyle: '',
-    location: '',
-    lookingFor: '',
-    favoriteCoin: '',
-    totalWalletValue: '',
-    totalTrenched: 'Coming Soon',
+    bio: '',
+    seeking: '',
     cryptoInterests: cryptoInterestOptions[0],
     favoriteBlockchainNetworks: blockchainOptions[0],
-    images: ['', '', ''],
+    images: Array(3).fill(''),
     walletAddress: '',
     isComplete: false,
     referralCode: '',
@@ -620,7 +615,7 @@ function Profile() {
                       _dark={{ bg: 'gray.700' }}
                     >
                       <Box position="relative" w="full" h="full">
-                      {profile.images[index] ? (
+                      {profile?.images?.[index] ? (
                         <Image
                           src={profile.images[index]}
                           alt={`Photo ${index + 1}`}
@@ -640,7 +635,7 @@ function Profile() {
                       )}
                     </Box>
                     </Box>
-                    {profile.images[index] && (
+                    {profile?.images?.[index] && (
                       <IconButton
                         icon={<CloseIcon />}
                         size="sm"

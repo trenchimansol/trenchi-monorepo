@@ -35,14 +35,29 @@ function Profile() {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const fileInputRefs = [useRef(null), useRef(null), useRef(null)];
+  const cryptoInterestOptions = [
+    'Trading Memes',
+    'Learning Crypto',
+    'Finding Web3 Love',
+    'Just for Fun'
+  ];
+
+  const blockchainOptions = [
+    'Solana',
+    'Bitcoin',
+    'Ethereum',
+    'Binance',
+    'Other'
+  ];
+
   const [profile, setProfile] = useState({
     name: '',
     age: '',
     gender: '',
     seeking: '',
     bio: '',
-    cryptoInterests: '',
-    favoriteChains: '',
+    cryptoInterests: cryptoInterestOptions[0], // Default value
+    favoriteChains: blockchainOptions[0], // Default value
     walletAddress: '',
     photos: ['', '', ''],
     isComplete: false,
@@ -136,8 +151,8 @@ function Profile() {
           gender: data.gender || '',
           seeking: data.seeking || '',
           bio: data.bio || '',
-          cryptoInterests: data.cryptoInterests || '',
-          favoriteChains: data.favoriteChains || '',
+          cryptoInterests: data.cryptoInterests || cryptoInterestOptions[0],
+          favoriteChains: data.favoriteChains || blockchainOptions[0],
           walletAddress: data.walletAddress || publicKey.toString(),
           photos: data.photos || ['', '', ''],
           referralCode: data.referralCode || '',
@@ -162,8 +177,8 @@ function Profile() {
               gender: '',
               seeking: '',
               bio: '',
-              cryptoInterests: '',
-              favoriteChains: '',
+              cryptoInterests: cryptoInterestOptions[0],
+              favoriteChains: blockchainOptions[0],
               walletAddress: publicKey.toString(),
               photos: ['', '', ''],
               referralCode: '',
@@ -223,8 +238,8 @@ function Profile() {
         gender: '',
         seeking: '',
         bio: '',
-        cryptoInterests: '',
-        favoriteChains: '',
+        cryptoInterests: cryptoInterestOptions[0],
+        favoriteChains: blockchainOptions[0],
         walletAddress: '',
         photos: ['', '', ''],
         isComplete: false,
@@ -436,30 +451,37 @@ function Profile() {
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>
             <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Crypto Interests</FormLabel>
-            <Textarea
+            <Select
               name="cryptoInterests"
               value={profile.cryptoInterests}
               onChange={handleChange}
-              placeholder="What aspects of crypto interest you the most?"
+              placeholder="Select interest"
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}
-              rows={2}
-            />
+            >
+              {cryptoInterestOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </Select>
             <FormHelperText>What aspects of crypto interest you the most?</FormHelperText>
           </FormControl>
 
           <FormControl isRequired>
             <FormLabel fontWeight="medium">Favorite Blockchain Networks</FormLabel>
-            <Input
+            <Select
               name="favoriteChains"
               value={profile.favoriteChains}
               onChange={handleChange}
-              placeholder="e.g., Ethereum, Solana, Polygon"
+              placeholder="Select network"
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}
-            />
+            >
+              {blockchainOptions.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </Select>
             <FormHelperText>Which blockchain networks do you use the most?</FormHelperText>
           </FormControl>
 

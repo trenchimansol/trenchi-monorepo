@@ -21,47 +21,18 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Configure CORS explicitly
-const allowedOrigins = [
-  'http://localhost:3000',  // local development
-  'https://transcendent-gaufre-9c484c.netlify.app', // Netlify domain
-  'https://trenchmatch.com', // production domain
-  process.env.FRONTEND_URL, // production frontend
-].filter(Boolean); // removes any undefined values
+// Enable CORS for all routes
+app.use(cors());
 
-app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if(!origin) return callback(null, true);
-    
-    if(allowedOrigins.indexOf(origin) === -1){
-      return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
-    }
-    return callback(null, true);
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Origin'],
-  exposedHeaders: ['Content-Length', 'X-Requested-With'],
-  credentials: true,
-  maxAge: 86400,
-  preflightContinue: false
-}));
-
-// Add headers to all responses
+// Add CORS headers to all responses
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', '*');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Origin');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
   next();
-});
-
-// Handle preflight requests
-app.options('*', (req, res) => {
-  res.sendStatus(200);
 });
 
 // Parse JSON request bodies

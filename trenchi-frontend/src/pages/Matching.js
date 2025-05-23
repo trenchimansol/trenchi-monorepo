@@ -261,46 +261,47 @@ export default function Matching() {
 
     try {
       setActionLoading(true);
-      setIsLiking(true);
-
-      const response = await fetch(api.like(potentialMatches[currentIndex].walletAddress), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ currentWalletAddress: publicKey.toString() }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.isMatch) {
-          toast({
-            title: 'It\'s a match! 🎉',
-            description: `You matched with ${potentialMatches[currentIndex].name}`,
-            status: 'success',
-            duration: 5000,
-            isClosable: true,
-          });
+      const response = await fetch(
+        api.like(potentialMatches[currentIndex].walletAddress),
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          credentials: 'include'
         }
+      );
 
-        // Move to next profile
-        setCurrentIndex(prevIndex => prevIndex + 1);
-      } else {
+      if (!response.ok) {
+        throw new Error('Failed to like profile');
+      }
+
+      const data = await response.json();
+      
+      // Show match notification if it's a match
+      if (data.isMatch) {
         toast({
-          title: 'Error',
-          description: 'Failed to like profile',
-          status: 'error',
+          title: 'It\'s a match! 🎉',
+          description: `You and ${potentialMatches[currentIndex].name} have liked each other!`,
+          status: 'success',
           duration: 5000,
           isClosable: true,
         });
       }
+
+      // Update daily likes count
+      updateDailyLikes();
+
+      // Move to next profile
+      setCurrentIndex(prevIndex => prevIndex + 1);
     } catch (error) {
       console.error('Error liking profile:', error);
       toast({
         title: 'Error',
-        description: 'Failed to like profile',
+        description: 'Failed to like profile. Please try again.',
         status: 'error',
-        duration: 5000,
+        duration: 3000,
         isClosable: true,
       });
     } finally {

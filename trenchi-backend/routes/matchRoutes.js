@@ -8,15 +8,15 @@ const Profile = require('../models/Profile');
  * Returns an array of new profiles for the current user to swipe on,
  * excluding themselves and any they've already liked/disliked/matched.
  */
-router.get('/potential-matches', async (req, res) => {
+router.get('/potential/:walletAddress', async (req, res) => {
   try {
-    const userId = req.query.userId; // e.g. /api/potential-matches?userId=abc123
-    if (!userId) {
-      return res.status(400).json({ error: 'No userId provided in query' });
+    const { walletAddress } = req.params;
+    if (!walletAddress) {
+      return res.status(400).json({ error: 'No wallet address provided' });
     }
 
     // Find current user's profile
-    const currentUser = await Profile.findById(userId);
+    const currentUser = await Profile.findOne({ walletAddress });
     if (!currentUser) {
       return res.status(404).json({ error: 'Current user not found' });
     }
@@ -49,14 +49,14 @@ router.get('/potential-matches', async (req, res) => {
  * GET /api/matches?userId=<someUserId>
  * Returns an array of matched users for the current user.
  */
-router.get('/matches', async (req, res) => {
+router.get('/:walletAddress', async (req, res) => {
   try {
-    const userId = req.query.userId;
-    if (!userId) {
-      return res.status(400).json({ error: 'No userId provided in query' });
+    const { walletAddress } = req.params;
+    if (!walletAddress) {
+      return res.status(400).json({ error: 'No wallet address provided' });
     }
 
-    const currentUser = await Profile.findById(userId);
+    const currentUser = await Profile.findOne({ walletAddress });
     if (!currentUser) {
       return res.status(404).json({ error: 'Current user not found' });
     }
@@ -77,17 +77,17 @@ router.get('/matches', async (req, res) => {
  * Current user likes the user with ID :id.
  * If the other user has also liked the current user, a mutual match is formed.
  */
-router.post('/like/:id', async (req, res) => {
+router.post('/like/:walletAddress', async (req, res) => {
   try {
-    const currentUserId = req.body.userId; // from request body
-    const likedUserId = req.params.id;
+    const { currentWalletAddress } = req.body;
+    const { walletAddress: likedWalletAddress } = req.params;
 
-    if (!currentUserId) {
-      return res.status(400).json({ error: 'No current user ID provided' });
+    if (!currentWalletAddress) {
+      return res.status(400).json({ error: 'No current wallet address provided' });
     }
 
-    const currentUser = await Profile.findById(currentUserId);
-    const likedUser = await Profile.findById(likedUserId);
+    const currentUser = await Profile.findOne({ walletAddress: currentWalletAddress });
+    const likedUser = await Profile.findOne({ walletAddress: likedWalletAddress });
 
     if (!currentUser || !likedUser) {
       return res.status(404).json({ error: 'User not found' });
@@ -132,16 +132,16 @@ router.post('/like/:id', async (req, res) => {
  * POST /api/dislike/:id
  * Current user dislikes the user with ID :id.
  */
-router.post('/dislike/:id', async (req, res) => {
+router.post('/dislike/:walletAddress', async (req, res) => {
   try {
-    const currentUserId = req.body.userId;
-    const dislikedUserId = req.params.id;
+    const { currentWalletAddress } = req.body;
+    const { walletAddress: dislikedWalletAddress } = req.params;
 
-    if (!currentUserId) {
-      return res.status(400).json({ error: 'No current user ID provided' });
+    if (!currentWalletAddress) {
+      return res.status(400).json({ error: 'No current wallet address provided' });
     }
 
-    const currentUser = await Profile.findById(currentUserId);
+    const currentUser = await Profile.findOne({ walletAddress: currentWalletAddress });
     if (!currentUser) {
       return res.status(404).json({ error: 'Current user not found' });
     }
@@ -168,17 +168,17 @@ router.post('/dislike/:id', async (req, res) => {
  * POST /api/unmatch/:id
  * Unmatches the user with ID :id from the current user.
  */
-router.post('/unmatch/:id', async (req, res) => {
+router.post('/unmatch/:walletAddress', async (req, res) => {
   try {
-    const currentUserId = req.body.userId;
-    const unmatchedUserId = req.params.id;
+    const { currentWalletAddress } = req.body;
+    const { walletAddress: unmatchedWalletAddress } = req.params;
 
-    if (!currentUserId) {
-      return res.status(400).json({ error: 'No current user ID provided' });
+    if (!currentWalletAddress) {
+      return res.status(400).json({ error: 'No current wallet address provided' });
     }
 
-    const currentUser = await Profile.findById(currentUserId);
-    const unmatchedUser = await Profile.findById(unmatchedUserId);
+    const currentUser = await Profile.findOne({ walletAddress: currentWalletAddress });
+    const unmatchedUser = await Profile.findOne({ walletAddress: unmatchedWalletAddress });
 
     if (!currentUser || !unmatchedUser) {
       return res.status(404).json({ error: 'User not found' });

@@ -154,9 +154,7 @@ export default function Matching() {
       //    - User's gender preference
       //    - Not previously rejected
       //    - Not already matched
-      const response = await fetch(api.getPotentialMatches({
-        walletAddress: publicKey.toString(),
-      }));
+      const response = await fetch(api.getPotentialMatches(publicKey.toString()));
       
       if (response.ok) {
         const data = await response.json();
@@ -259,101 +257,99 @@ export default function Matching() {
   };
 
   const handleLike = async () => {
-    if (!publicKey) {
+    if (!publicKey || !potentialMatches[currentIndex]) return;
+
+    try {
+      setActionLoading(true);
+      setIsLiking(true);
+
+      const response = await fetch(api.like(potentialMatches[currentIndex].walletAddress), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ currentWalletAddress: publicKey.toString() }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.isMatch) {
+          toast({
+            title: 'It\'s a match! 🎉',
+            description: `You matched with ${potentialMatches[currentIndex].name}`,
+            status: 'success',
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+
+        // Move to next profile
+        setCurrentIndex(prevIndex => prevIndex + 1);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to like profile',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error liking profile:', error);
       toast({
-        title: 'Wallet not connected',
-        description: 'Please connect your wallet to like profiles',
+        title: 'Error',
+        description: 'Failed to like profile',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
-      return;
-    }
-
-    if (isLiking) return;
-    setIsLiking(true);
-
-    try {
-      // Check if user has premium or has daily likes available
-      if (!isPremium) {
-        const dailyLikes = parseInt(localStorage.getItem('dailyLikes') || '0');
-        if (dailyLikes >= 3) {
-          toast({
-            title: 'Daily Like Limit Reached',
-            description: 'Upgrade to premium for unlimited likes!',
-            status: 'warning',
-            duration: 5000,
-            isClosable: true,
-          });
-          onOpen();
-          setIsLiking(false);
-          return;
-        }
-        // Increment daily likes count
-        localStorage.setItem('dailyLikes', (dailyLikes + 1).toString());
-      }
-
-      setIsLiking(true);
-
-      // In production, this would be an API call
-      // const response = await fetch(api.likeProfile(publicKey.toString(), currentProfile.id));
-      // const data = await response.json();
-
-      // Update daily likes count if not premium
-      if (!checkPremiumStatus()) {
-        updateDailyLikes();
-      }
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setIsLiking(false);
-      setCurrentIndex(prev => prev + 1);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        status: 'error',
-        duration: 3000,
-      });
     } finally {
+      setActionLoading(false);
       setIsLiking(false);
     }
   };
 
   const handleDislike = async () => {
-    if (!publicKey) {
-      onOpen();
-      return;
-    }
-
-    if (!potentialMatches[currentIndex]) return;
+    if (!publicKey || !potentialMatches[currentIndex]) return;
 
     try {
       setActionLoading(true);
-      // In production, this would be an API call
-      // await fetch(api.dislikeProfile({
-      //   walletAddress: publicKey.toString(),
-      //   dislikedId: potentialMatches[currentIndex]._id
-      // }));
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setCurrentIndex(prev => prev + 1);
+      const response = await fetch(api.dislike(potentialMatches[currentIndex].walletAddress), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ currentWalletAddress: publicKey.toString() }),
+      });
+
+      if (response.ok) {
+        // Move to next profile
+        setCurrentIndex(prevIndex => prevIndex + 1);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to dislike profile',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     } catch (error) {
+      console.error('Error disliking profile:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: 'Failed to dislike profile',
         status: 'error',
-        duration: 3000,
+        duration: 5000,
+        isClosable: true,
       });
     } finally {
       setActionLoading(false);
     }
   };
 
-return (
+  return (
   <Box minH="100vh" bg={useColorModeValue('white', 'gray.900')}>
     <Navigation />
     

@@ -11,11 +11,11 @@ export const api = {
     updateProfile: (walletAddress) => `${API_BASE_URL}/api/profile/${walletAddress}`,
     
     // Match endpoints
-    getPotentialMatches: (userId) => `${API_BASE_URL}/api/potential-matches?userId=${userId}`,
-    getMatches: (userId) => `${API_BASE_URL}/api/matches?userId=${userId}`,
-    like: (id) => `${API_BASE_URL}/api/like/${id}`,
-    dislike: (id) => `${API_BASE_URL}/api/dislike/${id}`,
-    unmatch: (id) => `${API_BASE_URL}/api/unmatch/${id}`,
+    getPotentialMatches: (walletAddress) => `${API_BASE_URL}/api/matches/potential/${walletAddress}`,
+    getMatches: (walletAddress) => `${API_BASE_URL}/api/matches/${walletAddress}`,
+    like: (walletAddress) => `${API_BASE_URL}/api/matches/like/${walletAddress}`,
+    dislike: (walletAddress) => `${API_BASE_URL}/api/matches/dislike/${walletAddress}`,
+    unmatch: (walletAddress) => `${API_BASE_URL}/api/matches/unmatch/${walletAddress}`,
     
     // Leaderboard endpoint
     leaderboard: `${API_BASE_URL}/api/leaderboard`,

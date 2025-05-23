@@ -15,7 +15,14 @@ router.get('/:walletAddress', async (req, res) => {
     if (profile) {
       res.status(200).json(profile);
     } else {
-      res.status(404).json({ error: 'Profile not found' });
+      // For new accounts, return 200 with empty profile
+      res.status(200).json({
+        walletAddress,
+        isNewUser: true,
+        totalPoints: 0,
+        referralCount: 0,
+        referralPoints: 0
+      });
     }
   } catch (error) {
     console.error('Error fetching profile:', error);

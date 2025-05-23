@@ -108,14 +108,25 @@ router.post('/like/:walletAddress', async (req, res) => {
     );
 
     let isMatch = false;
-    // If likedUser also liked currentUser, form a match
+
+    // Check if this creates a mutual match
     if (likedUser.likedUsers.includes(currentUser._id)) {
+      // Add to matched users if not already matched
       if (!currentUser.matchedUsers.includes(likedUser._id)) {
         currentUser.matchedUsers.push(likedUser._id);
       }
       if (!likedUser.matchedUsers.includes(currentUser._id)) {
         likedUser.matchedUsers.push(currentUser._id);
       }
+
+      // Remove from likedUsers since they're now matched
+      currentUser.likedUsers = currentUser.likedUsers.filter(
+        id => id.toString() !== likedUser._id.toString()
+      );
+      likedUser.likedUsers = likedUser.likedUsers.filter(
+        id => id.toString() !== currentUser._id.toString()
+      );
+
       isMatch = true;
     }
 

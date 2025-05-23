@@ -296,14 +296,13 @@ function Profile() {
       setLoading(true);
       const isNewProfile = !profile.isComplete;
       const response = await fetch(api.updateProfile(publicKey.toString()), {
-        method: 'PUT',
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json'
         },
-        credentials: 'include',
         body: JSON.stringify({
           ...profile,
+          walletAddress: publicKey.toString(),
           points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles
         }),
       });

@@ -53,7 +53,11 @@ const generateReferralCode = async (walletAddress) => {
   return code;
 };
 
-router.post('/', async (req, res) => {
+router.post('/:walletAddress', async (req, res) => {
+  const { walletAddress } = req.params;
+  if (!walletAddress) {
+    return res.status(400).json({ error: 'Wallet address is required' });
+  }
   try {
     const { walletAddress, referredBy } = req.body;
 

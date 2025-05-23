@@ -56,6 +56,7 @@ function Profile() {
     gender: '',
     bio: '',
     seeking: '',
+    totalWalletValue: '',
     cryptoInterests: cryptoInterestOptions[0],
     favoriteBlockchainNetworks: blockchainOptions[0],
     images: Array(3).fill(''),
@@ -286,7 +287,7 @@ function Profile() {
     }
 
     // Validate required fields
-    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking'];
+    const requiredFields = ['name', 'age', 'gender', 'bio', 'seeking', 'totalWalletValue'];
     const missingFields = requiredFields.filter(field => !profile[field]);
     
     if (missingFields.length > 0) {
@@ -474,6 +475,19 @@ function Profile() {
               rows={4}
             />
             <FormHelperText>Share your interests and what you're looking for</FormHelperText>
+          </FormControl>
+
+          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Total Wallet Value (USD)</FormLabel>
+            <Input
+              name="totalWalletValue"
+              value={profile.totalWalletValue}
+              onChange={handleChange}
+              placeholder="e.g. 10000"
+              size="lg"
+              bg="gray.50"
+              _dark={{ bg: 'gray.700' }}
+            />
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>

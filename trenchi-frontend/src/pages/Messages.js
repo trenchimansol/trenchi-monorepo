@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { getConversations, getChatHistory, sendMessage } from '../api/messages';
-import { InfoIcon, ArrowBackIcon } from '@chakra-ui/icons';
+import { InfoIcon, ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { FiSend } from 'react-icons/fi';
 import Navigation from '../components/Navigation';
+import MatchCard from '../components/MatchCard';
 
 import {
   Box,
@@ -32,6 +33,8 @@ import {
   DrawerContent,
   DrawerCloseButton,
   useDisclosure,
+  InputGroup,
+  InputRightElement,
 } from '@chakra-ui/react';
 
 const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001';
@@ -43,9 +46,8 @@ export default function Messages() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [showProfile, setShowProfile] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const messagesEndRef = useRef(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -111,13 +113,9 @@ export default function Messages() {
     return () => clearInterval(interval);
   }, [publicKey]);
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
     if (!newMessage.trim() || !publicKey || !selectedMatch) return;
 
     try {
@@ -131,9 +129,9 @@ export default function Messages() {
       // Update messages list
       setMessages(prev => [...prev, {
         id: message._id,
-        sender: 'me',
+        senderId: publicKey.toString(),
         content: message.content,
-        timestamp: new Date(message.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        timestamp: new Date(message.timestamp)
       }]);
 
       // Update the match's last message in the list
@@ -151,15 +149,21 @@ export default function Messages() {
       // Clear input
       setNewMessage('');
       
-      // Scroll to bottom
-      scrollToBottom();
+      // Scroll to bottom with smooth animation
+      const chatBox = document.querySelector('.chat-messages');
+      if (chatBox) {
+        chatBox.scrollTo({
+          top: chatBox.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
         title: 'Error',
         description: 'Failed to send message',
         status: 'error',
-        duration: 5000,
+        duration: 3000,
         isClosable: true,
       });
     }
@@ -171,9 +175,9 @@ export default function Messages() {
       const history = await getChatHistory(publicKey.toString(), match.walletAddress);
       const formattedMessages = history.map(msg => ({
         id: msg._id,
-        sender: msg.senderId === publicKey.toString() ? 'me' : 'other',
+        senderId: msg.senderId,
         content: msg.content,
-        timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+        timestamp: new Date(msg.timestamp)
       }));
       setMessages(formattedMessages);
     } catch (error) {
@@ -203,12 +207,14 @@ export default function Messages() {
     onOpen();
   };
 
-
-
-
-
   useEffect(() => {
-    scrollToBottom();
+    const chatBox = document.querySelector('.chat-messages');
+    if (chatBox) {
+      chatBox.scrollTo({
+        top: chatBox.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages]);
 
   return (
@@ -316,49 +322,53 @@ export default function Messages() {
                   p={4}
                   display="flex"
                   flexDirection="column"
+                  className="chat-messages"
                 >
                   {messages.map((message) => (
                     <Box
                       key={message.id}
-                      alignSelf={message.sender === 'me' ? 'flex-end' : 'flex-start'}
+                      alignSelf={message.senderId === publicKey?.toString() ? 'flex-end' : 'flex-start'}
                       maxW="70%"
                       mb={4}
                     >
                       <Box
-                        bg={message.sender === 'me' ? 'blue.500' : bgColor}
-                        color={message.sender === 'me' ? 'white' : 'inherit'}
+                        bg={message.senderId === publicKey?.toString() ? 'blue.500' : bgColor}
+                        color={message.senderId === publicKey?.toString() ? 'white' : 'inherit'}
                         borderRadius="lg"
                         px={4}
                         py={2}
-                        borderWidth={message.sender === 'me' ? 0 : '1px'}
+                        borderWidth={message.senderId === publicKey?.toString() ? 0 : '1px'}
                       >
                         <Text>{message.content}</Text>
                       </Box>
                       <Text fontSize="xs" color="gray.500" mt={1}>
-                        {message.timestamp}
+                        {new Date(message.timestamp).toLocaleTimeString()}
                       </Text>
                     </Box>
                   ))}
-                  <div ref={messagesEndRef} />
                 </Box>
 
                 {/* Input area */}
                 <Box p={4} borderTopWidth="1px" borderColor={borderColor}>
-                  <HStack spacing={4}>
-                    <Input
-                      placeholder="Type a message..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                      bg={inputBgColor}
-                    />
-                    <IconButton
-                      icon={<FiSend />}
-                      onClick={handleSendMessage}
-                      colorScheme="blue"
-                      isDisabled={!newMessage.trim()}
-                    />
-                  </HStack>
+                  <form onSubmit={handleSendMessage}>
+                    <InputGroup>
+                      <Input
+                        placeholder="Type a message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        bg={inputBgColor}
+                      />
+                      <InputRightElement>
+                        <IconButton
+                          type="submit"
+                          icon={<ArrowForwardIcon />}
+                          colorScheme="blue"
+                          variant="ghost"
+                          isDisabled={!newMessage.trim()}
+                        />
+                      </InputRightElement>
+                    </InputGroup>
+                  </form>
                 </Box>
               </Box>
             ) : (
@@ -375,81 +385,109 @@ export default function Messages() {
         </Grid>
       </Box>
       <Drawer
-        isOpen={showProfile}
+        isOpen={isOpen}
         placement="right"
-        onClose={onClose}
-        size="lg"
+        onClose={() => { onClose(); setShowProfile(false); }}
+        size="xl"
       >
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
-          <DrawerHeader borderBottomWidth="1px">
-            <VStack align="start" spacing={2}>
-              <Heading size="lg">{selectedMatch?.name}</Heading>
-              <HStack spacing={2}>
-                <Badge colorScheme="blue">{selectedMatch?.profile?.age} years</Badge>
-                <Badge colorScheme="purple">{selectedMatch?.profile?.gender}</Badge>
-              </HStack>
-            </VStack>
-          </DrawerHeader>
-          <DrawerBody>
-            {selectedMatch && showProfile && (
-              <VStack spacing={6} align="stretch" py={4}>
-                {/* Profile Images */}
-                <Box>
-                  <Text fontWeight="bold" mb={3}>Photos</Text>
-                  <Grid templateColumns="repeat(2, 1fr)" gap={4}>
-                    {selectedMatch.profile.images?.map((image, index) => (
-                      <Box 
-                        key={index} 
-                        borderRadius="lg" 
-                        overflow="hidden"
-                        position="relative"
-                        paddingBottom="100%"
+          <DrawerBody p={0}>
+            {showProfile && selectedMatch?.profile ? (
+              <Box p={4}>
+                <MatchCard
+                  profile={{
+                    ...selectedMatch.profile,
+                    name: selectedMatch.name,
+                    walletAddress: selectedMatch.walletAddress,
+                    images: selectedMatch.profile.images || [],
+                  }}
+                />
+              </Box>
+            ) : (
+              <VStack h="100%" spacing={0}>
+                <Box p={4} w="full" borderBottomWidth={1}>
+                  <HStack spacing={4}>
+                    <Avatar size="lg" name={selectedMatch?.name} src={selectedMatch?.avatar} />
+                    <VStack align="start" spacing={1}>
+                      <Text fontSize="xl" fontWeight="bold">{selectedMatch?.name}</Text>
+                      <Button
+                        size="sm"
+                        colorScheme="blue"
+                        variant="ghost"
+                        onClick={() => setShowProfile(true)}
                       >
-                        <Image
-                          src={image}
-                          alt={`Profile photo ${index + 1}`}
-                          layout="fill"
-                          objectFit="cover"
+                        View Profile
+                      </Button>
+                    </VStack>
+                  </HStack>
+                </Box>
+                <Box
+                  flex={1}
+                  w="full"
+                  overflowY="auto"
+                  p={4}
+                  css={{
+                    '&::-webkit-scrollbar': {
+                      width: '4px',
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      width: '6px',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      background: 'gray',
+                      borderRadius: '24px',
+                    },
+                  }}
+                >
+                  <VStack spacing={4} align="stretch">
+                    {messages.map((msg, index) => (
+                      <HStack
+                        key={index}
+                        alignSelf={msg.senderId === publicKey?.toString() ? 'flex-end' : 'flex-start'}
+                        maxW="70%"
+                      >
+                        {msg.senderId !== publicKey?.toString() && (
+                          <Avatar size="sm" name={selectedMatch?.name} src={selectedMatch?.avatar} />
+                        )}
+                        <Box
+                          bg={msg.senderId === publicKey?.toString() ? 'blue.500' : 'gray.100'}
+                          color={msg.senderId === publicKey?.toString() ? 'white' : 'black'}
+                          px={4}
+                          py={2}
+                          borderRadius="lg"
+                        >
+                          <Text>{msg.content}</Text>
+                          <Text fontSize="xs" color={msg.senderId === publicKey?.toString() ? 'whiteAlpha.700' : 'gray.500'}>
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </Text>
+                        </Box>
+                      </HStack>
+                    ))}
+                  </VStack>
+                </Box>
+                <Box p={4} w="full" borderTopWidth={1}>
+                  <form onSubmit={handleSendMessage}>
+                    <InputGroup>
+                      <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        bg="white"
+                        _dark={{ bg: 'gray.700' }}
+                      />
+                      <InputRightElement>
+                        <IconButton
+                          type="submit"
+                          icon={<ArrowForwardIcon />}
+                          colorScheme="blue"
+                          variant="ghost"
+                          isDisabled={!newMessage.trim()}
                         />
-                      </Box>
-                    ))}
-                  </Grid>
-                </Box>
-
-                {/* Bio */}
-                <Box>
-                  <Text fontWeight="bold" mb={3}>Bio</Text>
-                  <Text>{selectedMatch.profile.bio}</Text>
-                </Box>
-
-                {/* Interests */}
-                <Box>
-                  <Text fontWeight="bold" mb={3}>Interests</Text>
-                  <Wrap spacing={2}>
-                    {selectedMatch.profile.interests?.map((interest, index) => (
-                      <WrapItem key={index}>
-                        <Badge colorScheme="purple">{interest}</Badge>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                </Box>
-
-                {/* Location */}
-                <Box>
-                  <Text fontWeight="bold" mb={3}>Location</Text>
-                  <Text>{selectedMatch.profile.location}</Text>
-                </Box>
-
-                {/* Additional Info */}
-                <Box>
-                  <Text fontWeight="bold" mb={2}>Favorite Chains</Text>
-                  <Wrap spacing={2}>
-                    {selectedMatch.profile.favoriteChains?.map((chain, index) => (
-                      <Badge key={index} colorScheme="blue">{chain}</Badge>
-                    ))}
-                  </Wrap>
+                      </InputRightElement>
+                    </InputGroup>
+                  </form>
                 </Box>
               </VStack>
             )}

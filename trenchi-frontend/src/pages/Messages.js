@@ -82,14 +82,14 @@ export default function Messages() {
               time: conversation ? new Date(conversation.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '',
               unreadCount: conversation?.unreadCount || 0,
               profile: {
-                ...match,
-                age: match.age || 'N/A',
-                gender: match.gender || 'N/A',
+                age: match.age || null,
+                gender: match.gender || null,
                 bio: match.bio || '',
-                location: match.location || 'N/A',
+                location: match.location || null,
                 interests: match.interests || [],
                 favoriteChains: match.favoriteChains || [],
-                images: match.images || []
+                images: match.images || [],
+                portfolioValueSOL: match.portfolioValueSOL || 0
               }
             };
           })
@@ -417,16 +417,21 @@ export default function Messages() {
                         <VStack align="start" spacing={1}>
                           <HStack align="center" spacing={2}>
                             <Text fontSize="2xl" fontWeight="bold">{selectedMatch.name}</Text>
-                            <Text fontSize="2xl" color="gray.500">{selectedMatch.profile.age || ''}</Text>
+                            <Text fontSize="2xl" color="gray.500">{selectedMatch.profile.age}</Text>
                           </HStack>
-                          <Badge colorScheme="purple">{selectedMatch.profile.gender || 'N/A'}</Badge>
-                          <Text color="gray.500">{selectedMatch.profile.location || 'No location'}</Text>
+                          <Badge colorScheme="purple" mb={1}>{selectedMatch.profile.gender}</Badge>
+                          <HStack spacing={1} align="center">
+                            <InfoIcon color="gray.500" boxSize={4} />
+                            <Text color="gray.500">{selectedMatch.profile.location || 'No location'}</Text>
+                          </HStack>
                         </VStack>
                       </HStack>
 
-                      <Box w="100%">
+                      <Box w="100%" bg="gray.700" p={4} borderRadius="md">
                         <Text fontWeight="semibold" mb={2}>Portfolio Value</Text>
-                        <Text fontSize="lg" color="green.400">{selectedMatch.profile.portfolioValueSOL || 0} SOL</Text>
+                        <Text fontSize="2xl" color="green.400" fontWeight="bold">
+                          {selectedMatch.profile.portfolioValueSOL} SOL
+                        </Text>
                       </Box>
 
                       <Box w="100%">

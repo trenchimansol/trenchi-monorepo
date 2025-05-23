@@ -10,18 +10,28 @@ const app = express();
 
 // Configure CORS
 const corsOptions = {
-  origin: 'https://trenchmatch.com',
+  origin: ['https://trenchmatch.com', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Origin'],
   credentials: true,
-  maxAge: 86400
+  maxAge: 86400,
+  preflightContinue: true
 };
 
 // Handle CORS preflight requests
-app.options('*', cors(corsOptions));
-
-// Enable CORS for all routes
 app.use(cors(corsOptions));
+
+// Additional CORS headers for all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Origin');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Basic middleware
 app.use(express.json());

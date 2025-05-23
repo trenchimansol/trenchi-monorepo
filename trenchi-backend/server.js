@@ -39,13 +39,30 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // if you're using cookies or authentication
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Origin'],
+  exposedHeaders: ['Content-Length', 'X-Requested-With'],
+  credentials: true,
+  maxAge: 86400,
+  preflightContinue: false
 }));
 
-// Explicitly handle OPTIONS for all routes
-app.options('*', cors());
+// Add headers to all responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept, Authorization, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.sendStatus(200);
+});
 
 // Parse JSON request bodies
 app.use(express.json({ limit: '10mb' }));

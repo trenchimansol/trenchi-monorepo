@@ -15,30 +15,19 @@ const matchRoutes = require('./routes/matchRoutes');
 
 const app = express();
 
-// CORS middleware
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://trenchmatch.com');
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
+// Basic middleware
+app.use(express.json());
 
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Max-Age', '86400');
-    return res.status(204).end();
-  }
-
-  next();
-});
-
-// Apply CORS for all routes
+// Simple CORS middleware
 app.use(cors({
-  origin: 'https://trenchmatch.com',
-  credentials: true
+  origin: true, // Allow all origins temporarily
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
 }));
 
-// Then other middleware
-app.use(express.json());
+// Handle OPTIONS preflight
+app.options('*', cors());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {

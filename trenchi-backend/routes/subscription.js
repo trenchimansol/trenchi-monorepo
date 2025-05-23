@@ -1,20 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const cors = require('cors');
 const Subscription = require('../models/Subscription');
 
-// CORS configuration
-const corsOptions = {
-  origin: 'https://trenchmatch.com',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-  credentials: true
-};
-
-// Apply CORS to all routes in this router
-router.use(cors(corsOptions));
-
 // Create or update subscription
-router.post('/', cors(corsOptions), async (req, res) => {
+router.post('/', async (req, res) => {
   try {
     const { walletAddress, transactionSignature, plan, expirationDate } = req.body;
 
@@ -46,7 +35,7 @@ router.post('/', cors(corsOptions), async (req, res) => {
 });
 
 // Get subscription status
-router.get('/:walletAddress', cors(corsOptions), async (req, res) => {
+router.get('/:walletAddress', async (req, res) => {
   try {
     const { walletAddress } = req.params;
     const subscription = await Subscription.findOne({ walletAddress });

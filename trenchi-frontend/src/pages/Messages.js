@@ -386,24 +386,65 @@ export default function Messages() {
       </Box>
       <Drawer
         isOpen={isOpen}
-        placement="right"
         onClose={() => { onClose(); setShowProfile(false); }}
-        size="xl"
+        size="md"
       >
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
           <DrawerBody p={0}>
             {showProfile && selectedMatch?.profile ? (
-              <Box p={4}>
-                <MatchCard
-                  profile={{
-                    ...selectedMatch.profile,
-                    name: selectedMatch.name,
-                    walletAddress: selectedMatch.walletAddress,
-                    images: selectedMatch.profile.images || [],
-                  }}
-                />
+              <Box p={4} maxH="calc(100vh - 32px)" overflowY="auto">
+                <Box maxW="400px" mx="auto">
+                  <VStack spacing={4}>
+                    {/* Profile Images */}
+                    <Box position="relative" w="100%" pb="100%" borderRadius="lg" overflow="hidden">
+                      <Image
+                        src={selectedMatch.profile.images?.[0] || 'https://via.placeholder.com/400'}
+                        alt={selectedMatch.name}
+                        position="absolute"
+                        top={0}
+                        left={0}
+                        w="100%"
+                        h="100%"
+                        objectFit="cover"
+                      />
+                    </Box>
+
+                    {/* Profile Info */}
+                    <VStack spacing={4} w="100%" align="start" p={4}>
+                      <HStack w="100%" justify="space-between" align="center">
+                        <VStack align="start" spacing={1}>
+                          <Text fontSize="2xl" fontWeight="bold">{selectedMatch.name}</Text>
+                          <Text color="gray.500">{selectedMatch.profile.location || 'No location'}</Text>
+                        </VStack>
+                      </HStack>
+
+                      <Box w="100%">
+                        <Text fontWeight="semibold" mb={2}>Bio</Text>
+                        <Text>{selectedMatch.profile.bio || 'No bio available'}</Text>
+                      </Box>
+
+                      <Box w="100%">
+                        <Text fontWeight="semibold" mb={2}>Interests</Text>
+                        <Wrap>
+                          {selectedMatch.profile.interests?.map((interest, i) => (
+                            <Badge key={i} colorScheme="blue">{interest}</Badge>
+                          )) || 'No interests listed'}
+                        </Wrap>
+                      </Box>
+
+                      <Box w="100%">
+                        <Text fontWeight="semibold" mb={2}>Favorite Chains</Text>
+                        <Wrap>
+                          {selectedMatch.profile.favoriteChains?.map((chain, i) => (
+                            <Badge key={i} colorScheme="purple">{chain}</Badge>
+                          )) || 'No chains listed'}
+                        </Wrap>
+                      </Box>
+                    </VStack>
+                  </VStack>
+                </Box>
               </Box>
             ) : (
               <VStack h="100%" spacing={0}>
@@ -428,6 +469,7 @@ export default function Messages() {
                   w="full"
                   overflowY="auto"
                   p={4}
+                  maxH="calc(100vh - 180px)"
                   css={{
                     '&::-webkit-scrollbar': {
                       width: '4px',
@@ -467,23 +509,25 @@ export default function Messages() {
                     ))}
                   </VStack>
                 </Box>
-                <Box p={4} w="full" borderTopWidth={1}>
+                <Box p={4} w="full" borderTopWidth={1} bg={bgColor}>
                   <form onSubmit={handleSendMessage}>
-                    <InputGroup>
+                    <InputGroup size="md" maxH="60px">
                       <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
                         placeholder="Type a message..."
                         bg="white"
                         _dark={{ bg: 'gray.700' }}
+                        pr="4.5rem"
                       />
-                      <InputRightElement>
+                      <InputRightElement width="4.5rem">
                         <IconButton
                           type="submit"
                           icon={<ArrowForwardIcon />}
                           colorScheme="blue"
                           variant="ghost"
                           isDisabled={!newMessage.trim()}
+                          size="sm"
                         />
                       </InputRightElement>
                     </InputGroup>

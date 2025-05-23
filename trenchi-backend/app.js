@@ -8,21 +8,14 @@ dotenv.config();
 
 const app = express();
 
-// Configure CORS options
-const corsOptions = {
-  origin: 'https://trenchmatch.com',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-// Apply CORS globally
-app.use(cors(corsOptions));
+// Enable CORS for all routes
+app.use(cors({
+  origin: true, // Allow all origins temporarily
+  credentials: true
+}));
 
 // Handle preflight requests
-app.options('*', cors(corsOptions));
+app.options('*', cors());
 
 // Basic middleware
 app.use(express.json());
@@ -42,12 +35,12 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('Connected to MongoDB'))
 .catch((err) => console.error('MongoDB connection error:', err));
 
-// Set up routes with CORS
-app.use('/api/messages', cors(corsOptions), messagesRouter);
-app.use('/api/subscription', cors(corsOptions), subscriptionRoutes);
-app.use('/api/profile', cors(corsOptions), profileRoutes);
-app.use('/api/leaderboard', cors(corsOptions), leaderboardRoutes);
-app.use('/api/matches', cors(corsOptions), matchRoutes);
+// Set up routes
+app.use('/api/messages', messagesRouter);
+app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/matches', matchRoutes);
 
 // Not Found handler
 app.use((req, res, next) => {

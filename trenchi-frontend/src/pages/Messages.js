@@ -162,9 +162,7 @@ export default function Messages() {
               unreadCount: conversation?.unreadCount || 0,
               profile: match,
               images: match.images || [],
-              unread: conv.unreadCount,
-              profile: userProfile.data,
-              walletAddress: conv.walletAddress
+              unreadCount: conversation?.unreadCount || 0
             };
           })
         );

@@ -58,8 +58,10 @@ router.post('/:walletAddress', async (req, res) => {
   if (!walletAddress) {
     return res.status(400).json({ error: 'Wallet address is required' });
   }
+
   try {
-    const { referredBy } = req.body;
+    const { referredBy, ...profileData } = req.body;
+    profileData.walletAddress = walletAddress; // Ensure walletAddress is set from params
 
     // Check if profile already exists
     const existingProfile = await Profile.findOne({ walletAddress });
@@ -67,8 +69,8 @@ router.post('/:walletAddress', async (req, res) => {
       // If profile exists, update it
       const updatedProfile = await Profile.findOneAndUpdate(
         { walletAddress },
-        { ...req.body, walletAddress },
-        { new: true }
+        { ...profileData },
+        { new: true, runValidators: true }
       );
       return res.status(200).json(updatedProfile);
     }
@@ -107,7 +109,7 @@ router.post('/:walletAddress', async (req, res) => {
     
     // Create new profile with initial points
     const newProfile = new Profile({
-      ...req.body,
+      ...profileData,
       referralCode,
       initialPoints: 10,
       totalPoints: 10 // Start with signup bonus
@@ -117,6 +119,9 @@ router.post('/:walletAddress', async (req, res) => {
     res.status(201).json(savedProfile);
   } catch (error) {
     console.error('Error saving profile:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: 'Missing required fields', details: error.message });
+    }
     res.status(500).json({ error: 'Failed to save profile' });
   }
 });

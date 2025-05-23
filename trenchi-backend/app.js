@@ -15,28 +15,27 @@ const matchRoutes = require('./routes/matchRoutes');
 
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-  origin: function(origin, callback) {
-    const allowedOrigins = ['https://trenchmatch.com', 'http://localhost:3000'];
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  credentials: true,
-  maxAge: 86400, // 24 hours
-  optionsSuccessStatus: 204,
-  preflightContinue: false
-};
+// CORS middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'https://trenchmatch.com');
+  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
 
-// Apply CORS first
-app.use(cors(corsOptions));
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Max-Age', '86400');
+    return res.status(204).end();
+  }
+
+  next();
+});
+
+// Apply CORS for all routes
+app.use(cors({
+  origin: 'https://trenchmatch.com',
+  credentials: true
+}));
 
 // Then other middleware
 app.use(express.json());

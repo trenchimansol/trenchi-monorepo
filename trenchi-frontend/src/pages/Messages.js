@@ -156,9 +156,11 @@ export default function Messages() {
             return {
               id: match.walletAddress,
               name: match.name,
+              walletAddress: match.walletAddress,
               lastMessage: conversation?.lastMessage || '',
               time: conversation ? new Date(conversation.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '',
               unreadCount: conversation?.unreadCount || 0,
+              profile: match,
               images: match.images || [],
               unread: conv.unreadCount,
               profile: userProfile.data,

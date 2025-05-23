@@ -261,25 +261,18 @@ export default function Matching() {
 
     try {
       setActionLoading(true);
-      const response = await fetch(
+      const response = await axios.post(
         api.like(potentialMatches[currentIndex].walletAddress),
+        { currentWalletAddress: publicKey.toString() },
         {
-          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            currentWalletAddress: publicKey.toString()
-          })
+          }
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to like profile');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       
       // Show match notification if it's a match
       if (data.isMatch) {

@@ -298,8 +298,11 @@ function Profile() {
       const response = await fetch(api.updateProfile(publicKey.toString()), {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': 'https://trenchmatch.com'
         },
+        credentials: 'include',
         body: JSON.stringify({
           ...profile,
           walletAddress: publicKey.toString(),

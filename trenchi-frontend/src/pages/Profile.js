@@ -56,7 +56,6 @@ function Profile() {
     gender: '',
     bio: '',
     seeking: '',
-    totalWalletValue: '',
     cryptoInterests: cryptoInterestOptions[0],
     favoriteBlockchainNetworks: blockchainOptions[0],
     images: Array(3).fill(''),
@@ -288,7 +287,7 @@ function Profile() {
 
     // Validate required fields
     const requiredFields = [
-      'name', 'age', 'gender', 'bio', 'seeking', 'totalWalletValue',
+      'name', 'age', 'gender', 'bio', 'seeking',
       'cryptoInterests', 'favoriteBlockchainNetworks', 'images'
     ];
     const missingFields = requiredFields.filter(field => {
@@ -328,6 +327,7 @@ function Profile() {
           ...profile,
           images: filteredImages,
           walletAddress: publicKey.toString(),
+          totalWalletValue: (balance * 75).toFixed(2), // Convert SOL to USD
           points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles
         }),
       });
@@ -486,17 +486,16 @@ function Profile() {
             <FormHelperText>Share your interests and what you're looking for</FormHelperText>
           </FormControl>
 
-          <FormControl isRequired mb={{ base: 2, md: 4 }}>
+          <FormControl mb={{ base: 2, md: 4 }}>
             <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Total Wallet Value (USD)</FormLabel>
             <Input
-              name="totalWalletValue"
-              value={profile.totalWalletValue}
-              onChange={handleChange}
-              placeholder="e.g. 10000"
+              value={`$${(balance * 75).toFixed(2)}`}
+              isReadOnly
               size="lg"
               bg="gray.50"
               _dark={{ bg: 'gray.700' }}
             />
+            <FormHelperText>Current SOL balance converted to USD</FormHelperText>
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>

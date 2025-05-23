@@ -4,19 +4,24 @@ const Profile = require('../models/Profile');
 const { authenticateToken } = require('../middleware/auth');
 
 // Get leaderboard data
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const leaderboard = await Profile.find({})
-      .select('name walletAddress images matchedUsers referralCount')
-      .sort({ referralCount: -1, matchedUsers: -1 })
-      .limit(100);
+      .select('name walletAddress images matchedUsers referralCount points totalPoints')
+      .sort({ totalPoints: -1 })
+      .limit(20);
+
+    if (!leaderboard || leaderboard.length === 0) {
+      return res.status(200).json([]);
+    }
 
     const formattedLeaderboard = leaderboard.map(profile => ({
-      name: profile.name,
+      name: profile.name || profile.walletAddress.slice(0, 6),
       walletAddress: profile.walletAddress,
-      profileImage: profile.images[0] || '', // Get first image as profile picture
-      matchCount: profile.matchedUsers.length,
-      referralCount: profile.referralCount
+      profileImage: profile.images?.[0] || '',
+      matchCount: profile.matchedUsers?.length || 0,
+      referralCount: profile.referralCount || 0,
+      totalPoints: profile.totalPoints || profile.points || 0
     }));
 
     res.status(200).json(formattedLeaderboard);

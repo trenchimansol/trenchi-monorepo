@@ -69,60 +69,32 @@ export default function Leaderboard() {
         );
 
         if (!response.ok) {
-          // Only retry on server errors or network issues
-          if ((response.status >= 500 || response.status === 0) && retryCount < 3) {
-            setIsLoading(false);
-            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-            return fetchLeaderboard(retryCount + 1);
-          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
         
         if (!Array.isArray(data)) {
-          throw new Error('Invalid leaderboard data format');
+          console.warn('Invalid leaderboard data format, using empty array');
+          setLeaderboardData([]);
+          return;
         }
 
         setLeaderboardData(data);
-      } catch (fetchError) {
-        if (fetchError.name === 'AbortError') {
-          throw new Error('Request timed out');
-        }
-        throw fetchError;
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        setError(error.message);
+        setLeaderboardData([]);
       }
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       setError(error.message);
       setLeaderboardData([]);
       
-      // Only create profile if we get a specific 404
-      if (error.message.includes('404') && publicKey) {
-        try {
-          const createResponse = await fetch(`${api.profile}/${publicKey.toString()}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            },
-            body: JSON.stringify({
-              walletAddress: publicKey.toString(),
-              name: `User ${publicKey.toString().slice(0, 4)}`,
-              matchCount: 0,
-              matchPoints: 0,
-              referralCount: 0,
-              referralPoints: 0,
-              totalPoints: 0
-            })
-          });
-
-          if (createResponse.ok) {
-            // Retry fetching the leaderboard after creating the profile
-            fetchLeaderboard();
-          }
-        } catch (createError) {
-          console.error('Error creating profile:', createError);
-        }
+      // Retry in case of network error
+      if (retryCount < 3) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+        return fetchLeaderboard(retryCount + 1);
       }
     } finally {
       setIsLoading(false);

@@ -22,6 +22,7 @@ import {
   Badge,
   Image,
   Wrap,
+  WrapItem,
   Heading,
   useToast,
   Drawer,
@@ -51,6 +52,64 @@ export default function Messages() {
   const selectedBg = useColorModeValue('blue.50', 'blue.900');
   const inputBgColor = useColorModeValue('white', 'gray.700');
   const hoverBg = useColorModeValue('gray.50', 'gray.700');
+
+  useEffect(() => {
+    if (!publicKey) return;
+
+    const fetchUserData = async () => {
+      try {
+        // First get all matched users
+        const matchesResponse = await axios.get(`${API_BASE_URL}/api/matches/${publicKey.toString()}`);
+        const matchedUsers = matchesResponse.data;
+
+        // Then get conversations
+        const conversations = await getConversations(publicKey.toString());
+
+        // Combine matches with their conversations
+        const matchesWithProfiles = await Promise.all(
+          matchedUsers.map(async (match) => {
+            // Find conversation with this match if it exists
+            const conversation = conversations.find(conv => conv.walletAddress === match.walletAddress);
+            
+            return {
+              id: match.walletAddress,
+              name: match.name || 'Anonymous',
+              walletAddress: match.walletAddress,
+              avatar: match.images?.[0] || '',
+              lastMessage: conversation?.lastMessage || '',
+              time: conversation ? new Date(conversation.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '',
+              unreadCount: conversation?.unreadCount || 0,
+              profile: {
+                ...match,
+                age: match.age || 'N/A',
+                gender: match.gender || 'N/A',
+                bio: match.bio || '',
+                location: match.location || 'N/A',
+                interests: match.interests || [],
+                favoriteChains: match.favoriteChains || [],
+                images: match.images || []
+              }
+            };
+          })
+        );
+
+        setMatches(matchesWithProfiles);
+      } catch (error) {
+        console.error('Error fetching matches:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load matches',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
+
+    fetchUserData();
+    const interval = setInterval(fetchUserData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [publicKey]);
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -130,71 +189,23 @@ export default function Messages() {
   };
 
   const handleViewProfile = () => {
-    if (selectedMatch) {
-      setShowProfile(true);
-      onOpen();
+    if (!selectedMatch?.profile) {
+      toast({
+        title: 'Error',
+        description: 'Profile information not available',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
     }
+    setShowProfile(true);
+    onOpen();
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!publicKey) return;
 
-      try {
-        // First get all matched users
-        const matchesResponse = await axios.get(`${API_BASE_URL}/api/matches/${publicKey.toString()}`);
-        const matchedUsers = matchesResponse.data;
 
-        // Then get conversations
-        const conversations = await getConversations(publicKey.toString());
 
-        // Combine matches with their conversations
-        const matchesWithProfiles = await Promise.all(
-          matchedUsers.map(async (match) => {
-            // Find conversation with this match if it exists
-            const conversation = conversations.find(conv => conv.walletAddress === match.walletAddress);
-            
-            return {
-              id: match.walletAddress,
-              name: match.name,
-              walletAddress: match.walletAddress,
-              lastMessage: conversation?.lastMessage || '',
-              time: conversation ? new Date(conversation.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '',
-              unreadCount: conversation?.unreadCount || 0,
-              profile: match,
-              images: match.images || [],
-              avatar: match.profilePicture || match.images?.[0] || null
-            };
-          })
-        );
-
-        setMatches(matchesWithProfiles);
-
-        // If there's a selected match, fetch their messages
-        if (selectedMatch) {
-          const history = await getChatHistory(publicKey.toString(), selectedMatch.walletAddress);
-          const formattedMessages = history.map(msg => ({
-            id: msg._id,
-            sender: msg.senderId === publicKey.toString() ? 'me' : 'other',
-            content: msg.content,
-            timestamp: new Date(msg.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-          }));
-          setMessages(formattedMessages);
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load matches',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    };
-
-    fetchUserData();
-  }, [publicKey, selectedMatch?.walletAddress]);
 
   useEffect(() => {
     scrollToBottom();
@@ -210,14 +221,48 @@ export default function Messages() {
           maxW="1200px"
           mx="auto"
         >
+          {/* Left side - Matched users list */}
           <GridItem
-            borderRight={{ base: 'none', md: `1px solid` }}
+            borderRight={{ base: 'none', md: '1px solid' }}
             borderRightColor={borderColor}
             pr={{ base: 0, md: 4 }}
             overflowY="auto"
-            maxH={{ base: 'auto', md: 'calc(100vh - 100px)' }}
+            h="full"
+            bg={bgColor}
           >
-            {matches.length === 0 ? (
+            <VStack spacing={4} align="stretch">
+              {matches.map((match) => (
+                <Box
+                  key={match.id}
+                  p={4}
+                  cursor="pointer"
+                  bg={selectedMatch?.id === match.id ? selectedBg : bgColor}
+                  _hover={{ bg: hoverBg }}
+                  borderRadius="lg"
+                  onClick={() => handleSelectMatch(match)}
+                >
+                  <HStack spacing={4}>
+                    <Avatar size="md" name={match.name} src={match.avatar}>
+                      {match.unreadCount > 0 && (
+                        <AvatarBadge boxSize="1.25em" bg="green.500">
+                          {match.unreadCount}
+                        </AvatarBadge>
+                      )}
+                    </Avatar>
+                    <Box flex="1">
+                      <Text fontWeight="bold">{match.name}</Text>
+                      <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                        {match.lastMessage || 'No messages yet'}
+                      </Text>
+                    </Box>
+                    <Text fontSize="xs" color="gray.500">
+                      {match.time}
+                    </Text>
+                  </HStack>
+                </Box>
+              ))}
+            </VStack>
+            {matches.length === 0 && (
               <VStack p={4} spacing={4} align="center">
                 <Text color="gray.500">No matches yet</Text>
                 <Button
@@ -229,135 +274,89 @@ export default function Messages() {
                   Find Matches
                 </Button>
               </VStack>
-            ) : (
-              matches.map((match) => (
-                <Box
-                  key={match.id}
-                  p={3}
-                  cursor="pointer"
-                  borderRadius="md"
-                  bg={selectedMatch?.id === match.id ? selectedBg : 'transparent'}
-                  _hover={{ bg: selectedMatch?.id === match.id ? selectedBg : hoverBg }}
-                  onClick={() => handleSelectMatch(match)}
-                >
-                  <HStack spacing={3}>
-                    <Avatar size="md" name={match.name} src={match.avatar}>
-                      {match.unreadCount > 0 && (
-                        <AvatarBadge boxSize="1.25em" bg="green.500">
-                          {match.unreadCount}
-                        </AvatarBadge>
-                      )}
-                    </Avatar>
-                    <Box flex="1">
-                      <Text fontWeight="bold">{match.name}</Text>
-                      <Text fontSize="sm" color="gray.500" noOfLines={1}>
-                        {match.lastMessage || 'Start a conversation!'}
-                      </Text>
-                    </Box>
-                    {match.time && (
-                      <Text fontSize="xs" color="gray.500">
-                        {match.time}
-                      </Text>
-                    )}
-                  </HStack>
-                </Box>
-              ))
             )}
           </GridItem>
 
-          <GridItem display={{ base: selectedMatch ? 'block' : 'none', md: 'block' }}>
+          {/* Right side - Chat area */}
+          <GridItem 
+            display={{ base: selectedMatch ? 'block' : 'none', md: 'block' }}
+            h="full"
+            bg={bgColor}
+          >
             {selectedMatch ? (
               <Box h="full" display="flex" flexDirection="column">
-                <HStack p={4} borderBottom="1px solid" borderColor={borderColor} spacing={4}>
+                {/* Chat header */}
+                <HStack
+                  p={4}
+                  borderBottomWidth="1px"
+                  borderColor={borderColor}
+                  spacing={4}
+                >
                   <IconButton
+                    display={{ base: 'flex', md: 'none' }}
                     icon={<ArrowBackIcon />}
-                    aria-label="Back"
                     variant="ghost"
-                    display={{ base: 'inline-flex', md: 'none' }}
                     onClick={() => setSelectedMatch(null)}
                   />
-                  <Avatar 
-                    size="md"
-                    src={selectedMatch.avatar} 
-                    name={selectedMatch.name}
-                  />
+                  <Avatar size="sm" name={selectedMatch.name} src={selectedMatch.avatar} />
                   <Box flex="1">
                     <Text fontWeight="bold">{selectedMatch.name}</Text>
-                    <Text fontSize="sm" color="gray.500">
-                      {selectedMatch.profile.bio?.slice(0, 50)}...
-                    </Text>
                   </Box>
-                  <Button
-                    leftIcon={<InfoIcon />}
-                    onClick={handleViewProfile}
+                  <IconButton
+                    icon={<InfoIcon />}
                     variant="ghost"
-                    size="sm"
-                  >
-                    View Profile
-                  </Button>
+                    onClick={handleViewProfile}
+                  />
                 </HStack>
 
-                <Box flex="1" overflowY="auto" p={4}>
-                  <VStack spacing={4} align="stretch">
-                    {messages.map((message) => (
-                      <HStack
-                        key={message.id}
-                        alignSelf={message.sender === 'me' ? 'flex-end' : 'flex-start'}
-                        spacing={2}
+                {/* Messages area */}
+                <Box
+                  flex="1"
+                  overflowY="auto"
+                  p={4}
+                  display="flex"
+                  flexDirection="column"
+                >
+                  {messages.map((message) => (
+                    <Box
+                      key={message.id}
+                      alignSelf={message.sender === 'me' ? 'flex-end' : 'flex-start'}
+                      maxW="70%"
+                      mb={4}
+                    >
+                      <Box
+                        bg={message.sender === 'me' ? 'blue.500' : bgColor}
+                        color={message.sender === 'me' ? 'white' : 'inherit'}
+                        borderRadius="lg"
+                        px={4}
+                        py={2}
+                        borderWidth={message.sender === 'me' ? 0 : '1px'}
                       >
-                        {message.sender !== 'me' && (
-                          <Avatar
-                            size="sm"
-                            src={selectedMatch.avatar}
-                            name={selectedMatch.name}
-                          />
-                        )}
-                        <Box
-                          maxW="70%"
-                          bg={message.sender === 'me' ? 'blue.500' : 'gray.100'}
-                          color={message.sender === 'me' ? 'white' : 'black'}
-                          px={4}
-                          py={2}
-                          borderRadius="lg"
-                        >
-                          <Text>{message.content}</Text>
-                          <Text fontSize="xs" color={message.sender === 'me' ? 'whiteAlpha.700' : 'gray.500'} mt={1}>
-                            {message.timestamp}
-                          </Text>
-                        </Box>
-                        {message.sender === 'me' && (
-                          <Avatar
-                            size="sm"
-                            name="Me"
-                          />
-                        )}
-                      </HStack>
-                    ))}
-                    <div ref={messagesEndRef} />
-                  </VStack>
+                        <Text>{message.content}</Text>
+                      </Box>
+                      <Text fontSize="xs" color="gray.500" mt={1}>
+                        {message.timestamp}
+                      </Text>
+                    </Box>
+                  ))}
+                  <div ref={messagesEndRef} />
                 </Box>
 
-                <Box 
-                  p={4} 
-                  borderTop="1px solid" 
-                  borderColor={borderColor}
-                >
-                  <HStack spacing={2}>
+                {/* Input area */}
+                <Box p={4} borderTopWidth="1px" borderColor={borderColor}>
+                  <HStack spacing={4}>
                     <Input
                       placeholder="Type a message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                       bg={inputBgColor}
-                      borderRadius="full"
                     />
                     <IconButton
                       icon={<FiSend />}
-                      aria-label="Send message"
+                      onClick={handleSendMessage}
                       colorScheme="blue"
                       isDisabled={!newMessage.trim()}
-                      rounded="full"
-                      onClick={handleSendMessage}
                     />
                   </HStack>
                 </Box>
@@ -369,23 +368,17 @@ export default function Messages() {
                 alignItems="center" 
                 justifyContent="center"
               >
-                <Text color="gray.500">
-                  Select a match to start chatting
-                </Text>
+                <Text color="gray.500">Select a match to start chatting</Text>
               </Box>
             )}
           </GridItem>
         </Grid>
       </Box>
-
-      <Drawer 
-        isOpen={isOpen} 
-        onClose={() => {
-          onClose();
-          setShowProfile(false);
-        }} 
-        size="md" 
+      <Drawer
+        isOpen={showProfile}
         placement="right"
+        onClose={onClose}
+        size="lg"
       >
         <DrawerOverlay />
         <DrawerContent>
@@ -416,13 +409,9 @@ export default function Messages() {
                       >
                         <Image
                           src={image}
-                          position="absolute"
-                          top={0}
-                          left={0}
-                          width="100%"
-                          height="100%"
+                          alt={`Profile photo ${index + 1}`}
+                          layout="fill"
                           objectFit="cover"
-                          alt={`${selectedMatch.name}'s photo ${index + 1}`}
                         />
                       </Box>
                     ))}
@@ -431,37 +420,29 @@ export default function Messages() {
 
                 {/* Bio */}
                 <Box>
-                  <Text fontWeight="bold" mb={2}>About</Text>
+                  <Text fontWeight="bold" mb={3}>Bio</Text>
                   <Text>{selectedMatch.profile.bio}</Text>
-                </Box>
-
-                {/* Looking For */}
-                <Box>
-                  <Text fontWeight="bold" mb={2}>Looking For</Text>
-                  <Text>{selectedMatch.profile.seeking}</Text>
                 </Box>
 
                 {/* Interests */}
                 <Box>
-                  <Text fontWeight="bold" mb={2}>Interests</Text>
+                  <Text fontWeight="bold" mb={3}>Interests</Text>
                   <Wrap spacing={2}>
                     {selectedMatch.profile.interests?.map((interest, index) => (
-                      <Badge key={index} colorScheme="green">{interest}</Badge>
+                      <WrapItem key={index}>
+                        <Badge colorScheme="purple">{interest}</Badge>
+                      </WrapItem>
                     ))}
                   </Wrap>
                 </Box>
 
-                {/* Crypto Interests */}
+                {/* Location */}
                 <Box>
-                  <Text fontWeight="bold" mb={2}>Crypto Interests</Text>
-                  <Wrap spacing={2}>
-                    {selectedMatch.profile.cryptoInterests?.map((interest, index) => (
-                      <Badge key={index} colorScheme="purple">{interest}</Badge>
-                    ))}
-                  </Wrap>
+                  <Text fontWeight="bold" mb={3}>Location</Text>
+                  <Text>{selectedMatch.profile.location}</Text>
                 </Box>
 
-                {/* Favorite Chains */}
+                {/* Additional Info */}
                 <Box>
                   <Text fontWeight="bold" mb={2}>Favorite Chains</Text>
                   <Wrap spacing={2}>
@@ -469,20 +450,6 @@ export default function Messages() {
                       <Badge key={index} colorScheme="blue">{chain}</Badge>
                     ))}
                   </Wrap>
-                </Box>
-
-                {/* Wallet */}
-                <Box>
-                  <Text fontWeight="bold" mb={2}>Wallet</Text>
-                  <VStack align="start" spacing={2}>
-                    <HStack>
-                      <Text>Balance:</Text>
-                      <Badge colorScheme="yellow">{selectedMatch.profile.walletBalance || 0} SOL</Badge>
-                    </HStack>
-                    <Text fontSize="sm" color="gray.500" wordBreak="break-all">
-                      {selectedMatch.profile.walletAddress}
-                    </Text>
-                  </VStack>
                 </Box>
               </VStack>
             )}

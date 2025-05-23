@@ -142,7 +142,9 @@ function Profile() {
       setLoading(true);
       const response = await fetch(api.getProfile(publicKey.toString()), {
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Origin': 'https://trenchmatch.com'
         },
         credentials: 'include'
       });
@@ -227,7 +229,8 @@ function Profile() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Origin': 'https://trenchmatch.com'
         },
         credentials: 'include'
       });

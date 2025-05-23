@@ -339,7 +339,6 @@ function Profile() {
           ...profile,
           images: filteredImages,
           walletAddress: publicKey.toString(),
-          totalWalletValue: (balance * 75).toFixed(2), // Convert SOL to USD
           points: isNewProfile ? 10 : profile.points // Add 10 points for new profiles
         }),
       });
@@ -496,18 +495,6 @@ function Profile() {
               rows={4}
             />
             <FormHelperText>Share your interests and what you're looking for</FormHelperText>
-          </FormControl>
-
-          <FormControl mb={{ base: 2, md: 4 }}>
-            <FormLabel fontSize={{ base: 'sm', md: 'md' }}>Total Wallet Value (USD)</FormLabel>
-            <Input
-              value={`$${(balance * 75).toFixed(2)}`}
-              isReadOnly
-              size="lg"
-              bg="gray.50"
-              _dark={{ bg: 'gray.700' }}
-            />
-            <FormHelperText>Current SOL balance converted to USD</FormHelperText>
           </FormControl>
 
           <FormControl isRequired mb={{ base: 2, md: 4 }}>

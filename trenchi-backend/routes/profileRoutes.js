@@ -59,12 +59,18 @@ router.post('/:walletAddress', async (req, res) => {
     return res.status(400).json({ error: 'Wallet address is required' });
   }
   try {
-    const { walletAddress, referredBy } = req.body;
+    const { referredBy } = req.body;
 
     // Check if profile already exists
     const existingProfile = await Profile.findOne({ walletAddress });
     if (existingProfile) {
-      return res.status(400).json({ error: 'Profile already exists' });
+      // If profile exists, update it
+      const updatedProfile = await Profile.findOneAndUpdate(
+        { walletAddress },
+        { ...req.body, walletAddress },
+        { new: true }
+      );
+      return res.status(200).json(updatedProfile);
     }
 
     // Validate referral code if provided

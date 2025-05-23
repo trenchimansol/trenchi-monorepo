@@ -394,79 +394,68 @@ export default function Messages() {
           <DrawerCloseButton />
           <DrawerBody p={0}>
             {showProfile && selectedMatch?.profile ? (
-              <Box p={4} maxH="calc(100vh - 32px)" overflowY="auto">
-                <Box maxW="400px" mx="auto">
-                  <VStack spacing={4}>
-                    {/* Profile Images */}
-                    <Box position="relative" w="100%" pb="100%" borderRadius="lg" overflow="hidden">
-                      <Image
-                        src={selectedMatch.profile.images?.[0] || 'https://via.placeholder.com/400'}
-                        alt={selectedMatch.name}
-                        position="absolute"
-                        top={0}
-                        left={0}
-                        w="100%"
-                        h="100%"
-                        objectFit="cover"
-                      />
-                    </Box>
-
-                    {/* Profile Info */}
-                    <VStack spacing={4} w="100%" align="start" p={4}>
-                      <HStack w="100%" justify="space-between" align="center">
-                        <VStack align="start" spacing={1}>
-                          <HStack align="center" spacing={2}>
-                            <Text fontSize="2xl" fontWeight="bold">{selectedMatch.name}</Text>
-                            <Text fontSize="2xl" color="gray.500">{selectedMatch.profile.age}</Text>
-                          </HStack>
-                          <Badge colorScheme="purple" mb={1}>{selectedMatch.profile.gender}</Badge>
-                          <HStack spacing={1} align="center">
-                            <InfoIcon color="gray.500" boxSize={4} />
-                            <Text color="gray.500">{selectedMatch.profile.location || 'No location'}</Text>
-                          </HStack>
-                        </VStack>
-                      </HStack>
-
-                      <Box w="100%" bg="gray.700" p={4} borderRadius="md">
-                        <Text fontWeight="semibold" mb={2}>Portfolio Value</Text>
-                        <Text fontSize="2xl" color="green.400" fontWeight="bold">
-                          {selectedMatch.profile.portfolioValueSOL} SOL
-                        </Text>
-                      </Box>
-
-                      <Box w="100%">
-                        <Text fontWeight="semibold" mb={2}>Bio</Text>
-                        <Text>{selectedMatch.profile.bio || 'No bio available'}</Text>
-                      </Box>
-
-                      <Box w="100%">
-                        <Text fontWeight="semibold" mb={2}>Interests</Text>
-                        <Wrap>
-                          {selectedMatch.profile.interests?.length > 0 ? (
-                            selectedMatch.profile.interests.map((interest, i) => (
-                              <Badge key={i} colorScheme="blue">{interest}</Badge>
-                            ))
-                          ) : (
-                            <Text color="gray.500">No interests listed</Text>
-                          )}
-                        </Wrap>
-                      </Box>
-
-                      <Box w="100%">
-                        <Text fontWeight="semibold" mb={2}>Favorite Chains</Text>
-                        <Wrap>
-                          {selectedMatch.profile.favoriteChains?.length > 0 ? (
-                            selectedMatch.profile.favoriteChains.map((chain, i) => (
-                              <Badge key={i} colorScheme="purple">{chain}</Badge>
-                            ))
-                          ) : (
-                            <Text color="gray.500">No chains listed</Text>
-                          )}
-                        </Wrap>
-                      </Box>
-                    </VStack>
-                  </VStack>
+              <Box maxH="calc(100vh - 32px)" overflowY="auto" bg="gray.800">
+                {/* Profile Image with Name and Tag */}
+                <Box position="relative" w="100%" pb="56.25%">
+                  <Image
+                    src={selectedMatch.profile.images?.[0] || 'https://via.placeholder.com/400'}
+                    alt={selectedMatch.name}
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    w="100%"
+                    h="100%"
+                    objectFit="cover"
+                  />
+                  <Box
+                    position="absolute"
+                    bottom={0}
+                    left={0}
+                    right={0}
+                    p={4}
+                    background="linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))">
+                    <HStack align="center" spacing={2}>
+                      <Text fontSize="2xl" fontWeight="bold" color="white">{selectedMatch.name}</Text>
+                      <Text fontSize="2xl" color="whiteAlpha.800">{selectedMatch.profile.age}</Text>
+                    </HStack>
+                    <Badge colorScheme="purple" mt={1}>{selectedMatch.profile.gender}</Badge>
+                  </Box>
+                  <Badge
+                    position="absolute"
+                    top={4}
+                    right={4}
+                    colorScheme="purple"
+                    fontSize="sm"
+                    px={2}
+                    py={1}
+                  >
+                    {selectedMatch.profile.tag || 'GM9S...CMJW'}
+                  </Badge>
                 </Box>
+
+                {/* Profile Info */}
+                <VStack spacing={6} p={6} align="start" w="100%">
+                  <Text>{selectedMatch.profile.bio || 'Hello'}</Text>
+
+                  <Box w="100%">
+                    <Text color="blue.400" fontWeight="semibold" mb={2}>Portfolio Value</Text>
+                    <Text fontSize="lg">{selectedMatch.profile.portfolioValueSOL} SOL</Text>
+                  </Box>
+
+                  <Box w="100%">
+                    <Text color="blue.400" fontWeight="semibold" mb={2}>Interests</Text>
+                    <Text color="gray.300">
+                      {selectedMatch.profile.interests?.join(', ') || 'Trading Memes'}
+                    </Text>
+                  </Box>
+
+                  <Box w="100%">
+                    <Text color="blue.400" fontWeight="semibold" mb={2}>Favorite Chains</Text>
+                    <Text color="gray.300">
+                      {selectedMatch.profile.favoriteChains?.join(', ') || 'Solana'}
+                    </Text>
+                  </Box>
+                </VStack>
               </Box>
             ) : (
               <VStack h="100%" spacing={0}>

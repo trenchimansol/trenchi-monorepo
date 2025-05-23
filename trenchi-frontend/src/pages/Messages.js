@@ -61,19 +61,38 @@ export default function Messages() {
     if (!newMessage.trim() || !publicKey || !selectedMatch) return;
 
     try {
+      // Send the message
       const message = await sendMessage(
         publicKey.toString(),
         selectedMatch.walletAddress,
         newMessage
       );
 
+      // Update messages list
       setMessages(prev => [...prev, {
         id: message._id,
         sender: 'me',
         content: message.content,
         timestamp: new Date(message.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
       }]);
+
+      // Update the match's last message in the list
+      setMatches(prev => prev.map(match => {
+        if (match.id === selectedMatch.id) {
+          return {
+            ...match,
+            lastMessage: newMessage,
+            time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+          };
+        }
+        return match;
+      }));
+
+      // Clear input
       setNewMessage('');
+      
+      // Scroll to bottom
+      scrollToBottom();
     } catch (error) {
       console.error('Error sending message:', error);
       toast({
@@ -121,17 +140,26 @@ export default function Messages() {
       if (!publicKey) return;
 
       try {
+        // First get all matched users
+        const matchesResponse = await axios.get(`${API_BASE_URL}/api/matches/${publicKey.toString()}`);
+        const matchedUsers = matchesResponse.data;
+
+        // Then get conversations
         const conversations = await getConversations(publicKey.toString());
+
+        // Combine matches with their conversations
         const matchesWithProfiles = await Promise.all(
-          conversations.map(async (conv) => {
-            // Fetch user profile for each conversation
-            const userProfile = await axios.get(`${API_BASE_URL}/api/users/${conv.walletAddress}`);
+          matchedUsers.map(async (match) => {
+            // Find conversation with this match if it exists
+            const conversation = conversations.find(conv => conv.walletAddress === match.walletAddress);
+            
             return {
-              id: conv.walletAddress,
-              name: conv.name,
-              lastMessage: conv.lastMessage,
-              time: new Date(conv.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-              avatar: conv.avatar,
+              id: match.walletAddress,
+              name: match.name,
+              lastMessage: conversation?.lastMessage || '',
+              time: conversation ? new Date(conversation.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '',
+              unreadCount: conversation?.unreadCount || 0,
+              images: match.images || [],
               unread: conv.unreadCount,
               profile: userProfile.data,
               walletAddress: conv.walletAddress

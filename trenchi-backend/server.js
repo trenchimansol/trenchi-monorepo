@@ -21,25 +21,25 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// CORS configuration - Allow requests from trenchmatch.com
+// CORS configuration
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'https://trenchmatch.com');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
+  const allowedOrigins = ['http://localhost:3000', 'https://trenchmatch.com'];
+
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+
   next();
 });
-
-// Also keep the cors middleware for local development
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
 
 // Parse JSON request bodies
 app.use(express.json({ limit: '10mb' }));

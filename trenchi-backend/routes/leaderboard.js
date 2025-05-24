@@ -15,13 +15,21 @@ router.get('/', async (req, res) => {
       return res.status(200).json([]);
     }
 
-    const formattedLeaderboard = leaderboard.map(profile => ({
-      name: profile.name || profile.walletAddress.slice(0, 6),
-      walletAddress: profile.walletAddress,
-      profileImage: profile.images?.[0] || '',
-      matchCount: profile.matchedUsers?.length || 0,
-      referralCount: profile.referralCount || 0,
-      totalPoints: profile.totalPoints || (profile.initialPoints + profile.matchPoints + profile.referralPoints) || 0
+    const formattedLeaderboard = leaderboard.map(profile => {
+      // Calculate points
+      const initialPoints = profile.initialPoints || 10; // Default 10 points for profile creation
+      const matchPoints = (profile.matchedUsers?.length || 0) * 2; // 2 points per match
+      const referralPoints = (profile.referralCount || 0) * 0.25; // 0.25 points per referral
+      const totalPoints = initialPoints + matchPoints + referralPoints;
+
+      return {
+        name: profile.name || profile.walletAddress.slice(0, 6),
+        walletAddress: profile.walletAddress,
+        profileImage: profile.images?.[0] || '',
+        matchCount: profile.matchedUsers?.length || 0,
+        referralCount: profile.referralCount || 0,
+        totalPoints: totalPoints
+      };
     }));
 
     res.status(200).json(formattedLeaderboard);

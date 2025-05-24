@@ -288,7 +288,7 @@ export default function Messages() {
                 <Text color="gray.500">No matches yet</Text>
                 <Button
                   as="a"
-                  href="/matching"
+                  href="/matches"
                   colorScheme="blue"
                   size="sm"
                 >

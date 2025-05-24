@@ -46,8 +46,23 @@ export default function Messages() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [showProfile, setShowProfile] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const nextImage = () => {
+    if (selectedMatch?.profile?.images?.length > 0) {
+      setCurrentImageIndex((prev) => (prev + 1) % selectedMatch.profile.images.length);
+    }
+  };
+
+  const prevImage = () => {
+    if (selectedMatch?.profile?.images?.length > 0) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? selectedMatch.profile.images.length - 1 : prev - 1
+      );
+    }
+  };
 
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -395,10 +410,10 @@ export default function Messages() {
           <DrawerBody p={0}>
             {showProfile && selectedMatch?.profile ? (
               <Box maxH="calc(100vh - 32px)" overflowY="auto" bg="gray.800">
-                {/* Profile Image with Name and Tag */}
-                <Box position="relative" w="100%" pb="56.25%">
+                {/* Profile Image Slideshow */}
+                <Box position="relative" w="100%" pb="133.33%" bg="gray.900">
                   <Image
-                    src={selectedMatch.profile.images?.[0] || 'https://via.placeholder.com/400'}
+                    src={selectedMatch.profile.images?.[currentImageIndex] || 'https://via.placeholder.com/400'}
                     alt={selectedMatch.name}
                     position="absolute"
                     top={0}
@@ -406,7 +421,65 @@ export default function Messages() {
                     w="100%"
                     h="100%"
                     objectFit="cover"
+                    transition="opacity 0.3s"
                   />
+                  
+                  {/* Navigation Arrows */}
+                  {selectedMatch.profile.images?.length > 1 && (
+                    <>
+                      <IconButton
+                        icon={<ArrowBackIcon />}
+                        position="absolute"
+                        left={4}
+                        top="50%"
+                        transform="translateY(-50%)"
+                        onClick={prevImage}
+                        colorScheme="whiteAlpha"
+                        variant="ghost"
+                        size="lg"
+                        isRound
+                        aria-label="Previous image"
+                      />
+                      <IconButton
+                        icon={<ArrowForwardIcon />}
+                        position="absolute"
+                        right={4}
+                        top="50%"
+                        transform="translateY(-50%)"
+                        onClick={nextImage}
+                        colorScheme="whiteAlpha"
+                        variant="ghost"
+                        size="lg"
+                        isRound
+                        aria-label="Next image"
+                      />
+                    </>
+                  )}
+
+                  {/* Image Counter */}
+                  {selectedMatch.profile.images?.length > 1 && (
+                    <HStack
+                      position="absolute"
+                      top={4}
+                      left={4}
+                      spacing={1}
+                      p={2}
+                      borderRadius="full"
+                      bg="blackAlpha.600"
+                    >
+                      {selectedMatch.profile.images.map((_, index) => (
+                        <Box
+                          key={index}
+                          w={2}
+                          h={2}
+                          borderRadius="full"
+                          bg={index === currentImageIndex ? "white" : "whiteAlpha.400"}
+                        />
+                      ))}
+                    </HStack>
+                  )}
+
+                  {/* Name and Info Overlay */}
                   <Box
                     position="absolute"
                     bottom={0}
@@ -420,6 +493,8 @@ export default function Messages() {
                     </HStack>
                     <Badge colorScheme="purple" mt={1}>{selectedMatch.profile.gender}</Badge>
                   </Box>
+
+                  {/* Wallet Tag */}
                   <Badge
                     position="absolute"
                     top={4}

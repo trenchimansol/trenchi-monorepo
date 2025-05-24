@@ -24,7 +24,7 @@ import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana
 
 function Pricing() {
   const navigate = useNavigate();
-  const { publicKey, signAndSendTransaction } = useWallet();
+  const { publicKey, sendTransaction } = useWallet();
   const { connection } = useConnection();
   const toast = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -96,15 +96,11 @@ function Pricing() {
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
-      // Sign and send transaction
-      const { signature } = await signAndSendTransaction(transaction);
+      // Send transaction
+      const signature = await sendTransaction(transaction, connection);
       
       // Wait for confirmation
-      const confirmation = await connection.confirmTransaction({
-        signature,
-        blockhash,
-        lastValidBlockHeight: await connection.getBlockHeight(),
-      });
+      await connection.confirmTransaction(signature);
 
       // Calculate expiration date
       const expirationDate = new Date();

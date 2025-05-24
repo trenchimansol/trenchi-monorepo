@@ -28,9 +28,9 @@ router.get('/', async (req, res) => {
         profileImage: profile.images?.[0] || '',
         matchCount: profile.matchedUsers?.length || 0,
         referralCount: profile.referralCount || 0,
-        totalPoints: totalPoints
+        totalPoints
       };
-    }));
+    });
 
     res.status(200).json(formattedLeaderboard);
   } catch (error) {

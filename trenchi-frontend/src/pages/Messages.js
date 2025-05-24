@@ -476,11 +476,10 @@ export default function Messages() {
                   </HStack>
                 </Box>
                 <Box
-                  flex={1}
                   w="full"
+                  h="calc(100vh - 180px)"
                   overflowY="auto"
                   p={4}
-                  maxH="calc(100vh - 180px)"
                   css={{
                     '&::-webkit-scrollbar': {
                       width: '4px',
@@ -520,9 +519,9 @@ export default function Messages() {
                     ))}
                   </VStack>
                 </Box>
-                <Box p={4} w="full" borderTopWidth={1} bg={bgColor}>
+                <Box p={4} w="full" h="80px" borderTopWidth={1} bg={bgColor}>
                   <form onSubmit={handleSendMessage}>
-                    <InputGroup size="md" maxH="60px">
+                    <InputGroup size="md">
                       <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}

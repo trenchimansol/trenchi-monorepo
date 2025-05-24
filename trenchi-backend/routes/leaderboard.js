@@ -7,7 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 router.get('/', async (req, res) => {
   try {
     const leaderboard = await Profile.find({})
-      .select('name walletAddress images matchedUsers referralCount points totalPoints')
+      .select('name walletAddress images matchedUsers matchCount matchPoints referralCount referralPoints initialPoints totalPoints')
       .sort({ totalPoints: -1 })
       .limit(20);
 
@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
       profileImage: profile.images?.[0] || '',
       matchCount: profile.matchedUsers?.length || 0,
       referralCount: profile.referralCount || 0,
-      totalPoints: profile.totalPoints || profile.points || 0
+      totalPoints: profile.totalPoints || (profile.initialPoints + profile.matchPoints + profile.referralPoints) || 0
     }));
 
     res.status(200).json(formattedLeaderboard);

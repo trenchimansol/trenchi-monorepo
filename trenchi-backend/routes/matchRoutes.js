@@ -127,11 +127,14 @@ router.post('/like/:walletAddress', async (req, res) => {
         id => id.toString() !== currentUser._id.toString()
       );
 
-      // Add 2 points for the match to both users
+      // Update match counts and points for both users
+      currentUser.matchCount += 1;
       currentUser.matchPoints += 2;
-      currentUser.totalPoints += 2;
+      currentUser.totalPoints = currentUser.initialPoints + currentUser.matchPoints + currentUser.referralPoints;
+      
+      likedUser.matchCount += 1;
       likedUser.matchPoints += 2;
-      likedUser.totalPoints += 2;
+      likedUser.totalPoints = likedUser.initialPoints + likedUser.matchPoints + likedUser.referralPoints;
 
       isMatch = true;
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { getConversations, getChatHistory, sendMessage } from '../api/messages';
-import { InfoIcon, ArrowBackIcon, ArrowForwardIcon } from '@chakra-ui/icons';
+import { InfoIcon, ArrowForwardIcon, ArrowBackIcon, ArrowLeftIcon, ArrowRightIcon } from '@chakra-ui/icons';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { FiSend } from 'react-icons/fi';
 import Navigation from '../components/Navigation';
@@ -409,15 +409,12 @@ export default function Messages() {
           <DrawerCloseButton />
           <DrawerBody p={0}>
             {showProfile && selectedMatch?.profile ? (
-              <Box h="100vh" bg="gray.800" display="flex" flexDirection="column">
+              <Box h="100vh" bg="gray.800" display="flex" flexDirection="column" overflow="hidden">
                 {/* Profile Image Slideshow */}
-                <Box position="relative" w="100%" h="60vh" minH="400px" bg="gray.900">
+                <Box position="relative" w="100%" h="60vh" minH="400px" bg="gray.900" flexShrink={0}>
                   <Image
                     src={selectedMatch.profile.images?.[currentImageIndex] || 'https://via.placeholder.com/400'}
                     alt={selectedMatch.name}
-                    position="absolute"
-                    top={0}
-                    left={0}
                     w="100%"
                     h="100%"
                     objectFit="cover"
@@ -428,28 +425,32 @@ export default function Messages() {
                   {selectedMatch.profile.images?.length > 1 && (
                     <>
                       <IconButton
-                        icon={<ArrowBackIcon />}
+                        icon={<ArrowLeftIcon />}
                         position="absolute"
                         left={4}
                         top="50%"
                         transform="translateY(-50%)"
                         onClick={prevImage}
                         colorScheme="whiteAlpha"
-                        variant="ghost"
+                        bg="blackAlpha.600"
+                        _hover={{ bg: 'blackAlpha.700' }}
                         size="lg"
+                        zIndex={2}
                         isRound
                         aria-label="Previous image"
                       />
                       <IconButton
-                        icon={<ArrowForwardIcon />}
+                        icon={<ArrowRightIcon />}
                         position="absolute"
                         right={4}
                         top="50%"
                         transform="translateY(-50%)"
                         onClick={nextImage}
                         colorScheme="whiteAlpha"
-                        variant="ghost"
+                        bg="blackAlpha.600"
+                        _hover={{ bg: 'blackAlpha.700' }}
                         size="lg"
+                        zIndex={2}
                         isRound
                         aria-label="Next image"
                       />

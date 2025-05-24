@@ -37,7 +37,7 @@ import api from '../config/api';
 
 export default function Matching() {
   const wallet = useWallet();
-  const { publicKey } = wallet;
+  const { publicKey, signAndSendTransaction } = wallet;
   const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -183,7 +183,10 @@ export default function Matching() {
       const currentMatch = potentialMatches[currentIndex];
 
       // Connect to Solana network
-      const connection = new Connection('https://api.mainnet-beta.solana.com');
+      const connection = new Connection(
+        process.env.REACT_APP_SOLANA_RPC_URL || 'https://solana-mainnet.g.alchemy.com/v2/hTwg5eAf1qtUnvVmtcNgCziDg3cE3-1K',
+        'confirmed'
+      );
 
       // Calculate fee (5%) and recipient amount (95%)
       const totalLamports = tipAmount * LAMPORTS_PER_SOL;
@@ -192,12 +195,18 @@ export default function Matching() {
 
       // Platform fee wallet address
       const feeWallet = new PublicKey('5nh3aS9Nm1DH2MDtZU6MPuZyYtA3xXx5YyeS9uxtfk3N');
+      const recipientWallet = new PublicKey(currentMatch.walletAddress);
 
-      // Create transaction with two transfers
+      // Create transaction
       const transaction = new Transaction();
-
-      // Add platform fee transfer
+      
+      // Add transfer instructions
       transaction.add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: recipientWallet,
+          lamports: recipientLamports,
+        }),
         SystemProgram.transfer({
           fromPubkey: publicKey,
           toPubkey: feeWallet,
@@ -205,24 +214,20 @@ export default function Matching() {
         })
       );
 
-      // Add recipient transfer
-      transaction.add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: new PublicKey(currentMatch.walletAddress),
-          lamports: recipientLamports,
-        })
-      );
-
-      // Get the latest blockhash
+      // Get latest blockhash
       const { blockhash } = await connection.getLatestBlockhash();
       transaction.recentBlockhash = blockhash;
       transaction.feePayer = publicKey;
 
-      // Sign and send the transaction
-      const signedTx = await wallet.signTransaction(transaction);
-      const txId = await connection.sendRawTransaction(signedTx.serialize());
-      await connection.confirmTransaction(txId);
+      // Sign and send transaction
+      const { signature } = await signAndSendTransaction(transaction);
+      
+      // Wait for confirmation
+      const confirmation = await connection.confirmTransaction({
+        signature,
+        blockhash,
+        lastValidBlockHeight: await connection.getBlockHeight(),
+      });
 
       // In production, notify backend about the tip
       // await fetch(api.recordTip({

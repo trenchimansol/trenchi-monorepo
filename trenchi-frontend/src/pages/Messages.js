@@ -409,9 +409,9 @@ export default function Messages() {
           <DrawerCloseButton />
           <DrawerBody p={0}>
             {showProfile && selectedMatch?.profile ? (
-              <Box maxH="calc(100vh - 32px)" overflowY="auto" bg="gray.800">
+              <Box h="100vh" bg="gray.800" display="flex" flexDirection="column">
                 {/* Profile Image Slideshow */}
-                <Box position="relative" w="100%" pb="133.33%" bg="gray.900">
+                <Box position="relative" w="100%" h="60vh" minH="400px" bg="gray.900">
                   <Image
                     src={selectedMatch.profile.images?.[currentImageIndex] || 'https://via.placeholder.com/400'}
                     alt={selectedMatch.name}
@@ -509,28 +509,30 @@ export default function Messages() {
                 </Box>
 
                 {/* Profile Info */}
-                <VStack spacing={6} p={6} align="start" w="100%">
-                  <Text>{selectedMatch.profile.bio || 'Hello'}</Text>
+                <Box flex={1} overflowY="auto">
+                  <VStack spacing={6} p={6} align="start" w="100%">
+                    <Text>{selectedMatch.profile.bio || 'Hello'}</Text>
 
-                  <Box w="100%">
-                    <Text color="blue.400" fontWeight="semibold" mb={2}>Portfolio Value</Text>
-                    <Text fontSize="lg">{selectedMatch.profile.portfolioValueSOL} SOL</Text>
-                  </Box>
+                    <Box w="100%">
+                      <Text color="blue.400" fontWeight="semibold" mb={2}>Portfolio Value</Text>
+                      <Text fontSize="lg">{selectedMatch.profile.portfolioValueSOL} SOL</Text>
+                    </Box>
 
-                  <Box w="100%">
-                    <Text color="blue.400" fontWeight="semibold" mb={2}>Interests</Text>
-                    <Text color="gray.300">
-                      {selectedMatch.profile.interests?.join(', ') || 'Trading Memes'}
-                    </Text>
-                  </Box>
+                    <Box w="100%">
+                      <Text color="blue.400" fontWeight="semibold" mb={2}>Interests</Text>
+                      <Text color="gray.300">
+                        {selectedMatch.profile.interests?.join(', ') || 'Trading Memes'}
+                      </Text>
+                    </Box>
 
-                  <Box w="100%">
-                    <Text color="blue.400" fontWeight="semibold" mb={2}>Favorite Chains</Text>
-                    <Text color="gray.300">
-                      {selectedMatch.profile.favoriteChains?.join(', ') || 'Solana'}
-                    </Text>
-                  </Box>
-                </VStack>
+                    <Box w="100%">
+                      <Text color="blue.400" fontWeight="semibold" mb={2}>Favorite Chains</Text>
+                      <Text color="gray.300">
+                        {selectedMatch.profile.favoriteChains?.join(', ') || 'Solana'}
+                      </Text>
+                    </Box>
+                  </VStack>
+                </Box>
               </Box>
             ) : (
               <VStack h="100%" spacing={0}>
@@ -594,7 +596,8 @@ export default function Messages() {
                     ))}
                   </VStack>
                 </Box>
-                <Box p={4} w="full" h="80px" borderTopWidth={1} bg={bgColor}>
+                {/* Message Input */}
+                <Box p={4} w="full" h="70px" borderTopWidth={1} bg={bgColor}>
                   <form onSubmit={handleSendMessage}>
                     <InputGroup size="md">
                       <Input
